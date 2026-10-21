@@ -1,4 +1,4 @@
-import { Client, Room } from "colyseus.js";
+import { Client, Room } from "@colyseus/sdk";
 import { soundManager } from "../audio/SoundManager.js";
 import type {
   AnimationState,

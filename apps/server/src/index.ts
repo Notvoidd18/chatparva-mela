@@ -5,7 +5,7 @@ import http from "node:http";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import { Server } from "@colyseus/core";
+import { Server, createNodeMatchmakingMiddleware } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { MelaWorldRoom } from "./rooms/MelaWorldRoom.js";
 import { ROOM_NAMES } from "@melaverse/shared";
@@ -23,9 +23,12 @@ const app = express();
 app.use(
   cors({
     origin: "*", // Allow cross-device dev access (LAN IP / localhost)
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"],
   })
 );
+
+// Colyseus HTTP Matchmaker middleware (handles POST /matchmake/:method/:roomName)
+app.use(createNodeMatchmakingMiddleware());
 
 app.use(express.json());
 
@@ -56,7 +59,7 @@ if (webDistPath) {
   app.use(express.static(webDistPath));
 
   app.get("*", (req, res, next) => {
-    if (req.path === "/health" || req.path.startsWith("/colyseus")) return next();
+    if (req.path === "/health" || req.path.startsWith("/colyseus") || req.path.startsWith("/matchmake")) return next();
     res.sendFile(path.join(webDistPath, "index.html"));
   });
 } else {
