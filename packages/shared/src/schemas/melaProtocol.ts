@@ -57,6 +57,7 @@ export const AvatarCustomizationSchema = z.object({
   skinTone: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#E0AC69"),
   hasTika: z.boolean().default(false),
   hasJamara: z.boolean().default(false),
+  avatarType: z.enum(["boy1", "boy2", "girl1", "girl2"]).default("boy1").optional(),
 });
 
 export type AvatarCustomizationType = z.infer<typeof AvatarCustomizationSchema>;

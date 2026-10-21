@@ -13,12 +13,14 @@ import { InventoryModal } from "./ui/InventoryModal.js";
 import { UsernameModal } from "./ui/UsernameModal.js";
 import { TikaBlessingModal } from "./ui/TikaBlessingModal.js";
 import { SettingsModal } from "./ui/SettingsModal.js";
+import { ControlsModal } from "./ui/ControlsModal.js";
+import { JoinLobbyModal } from "./ui/JoinLobbyModal.js";
 import { DanPetiModal } from "./ui/DanPetiModal.js";
 import { SansthaModal } from "./ui/SansthaModal.js";
 import { MusicPlayer } from "./ui/MusicPlayer.js";
 import { soundManager } from "./audio/SoundManager.js";
 import { networkManager, type RemotePlayerData } from "./network/NetworkManager.js";
-import { INITIAL_DIYA_STATIONS, ATTRACTION_LOCATIONS } from "@melaverse/shared";
+import { INITIAL_DIYA_STATIONS, ATTRACTION_LOCATIONS, AVATAR_PRESETS } from "@melaverse/shared";
 import type {
   AnimationState,
   AvatarCustomization,
@@ -28,6 +30,19 @@ import type {
 } from "@melaverse/shared";
 
 export const MelaGame: React.FC = () => {
+  // Start Screen / Join Lobby State
+  const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(true);
+  const [isControlsOpen, setIsControlsOpen] = useState<boolean>(false);
+
+  // Avatar preset selection (2 boys, 2 girls)
+  const [avatarPresetId, setAvatarPresetId] = useState<"boy1" | "boy2" | "girl1" | "girl2">(() => {
+    try {
+      const saved = localStorage.getItem("chatparva_avatar");
+      if (saved === "boy1" || saved === "boy2" || saved === "girl1" || saved === "girl2") return saved;
+    } catch {}
+    return "boy1";
+  });
+
   // Player name & identity (Phase 8)
   const [displayName, setDisplayName] = useState<string>(() => {
     try {
@@ -36,24 +51,12 @@ export const MelaGame: React.FC = () => {
     } catch {}
     return `Yatri-${Math.floor(1000 + Math.random() * 9000)}`;
   });
-  const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(() => {
-    try {
-      return !localStorage.getItem("chatparva_username");
-    } catch {
-      return false;
-    }
-  });
+  const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
 
   // Customization
-  const [customization, setCustomization] = useState<AvatarCustomization>({
-    color: "#C41E3A",
-    dhakaTopiColor: "#8B0000",
-    hasDhakaTopi: true,
-    hasVest: true,
-    vestColor: "#D97706",
-    skinTone: "#E0AC69",
-    hasTika: false,
-    hasJamara: false,
+  const [customization, setCustomization] = useState<AvatarCustomization>(() => {
+    const found = AVATAR_PRESETS.find((p) => p.id === avatarPresetId);
+    return found ? { ...found.customization } : { ...AVATAR_PRESETS[0].customization };
   });
 
   // Currency & Inventory (Phase 4 & 9D)
@@ -271,6 +274,45 @@ export const MelaGame: React.FC = () => {
     });
   }, [displayName, currentServerId]);
 
+  // Join Lobby Handlers
+  const handleJoinMultiplayer = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2") => {
+    setDisplayName(name);
+    setAvatarPresetId(avType);
+    const preset = AVATAR_PRESETS.find((p) => p.id === avType) ?? AVATAR_PRESETS[0];
+    const newCustomization: AvatarCustomization = { ...preset.customization };
+    setCustomization(newCustomization);
+    setIsLobbyOpen(false);
+
+    setConnectionState("connecting");
+    networkManager.connect(name, newCustomization, currentServerId).then((connected) => {
+      if (connected) {
+        setIsOnline(true);
+        setConnectionState("online");
+        showToast(
+          `🎉 Swagatam ${name}! Connected to ${
+            currentServerId === "melaverse-server-2"
+              ? "🏔️ Server 2: Pokhara Chautari"
+              : "🇳🇵 Server 1: Kathmandu Mela"
+          }! 🌐`
+        );
+      } else {
+        setIsOnline(false);
+        setConnectionState("disconnected");
+        showToast("Connected in Standalone 3D Mode! (Offline fallback)");
+      }
+    });
+  };
+
+  const handlePlaySolo = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2") => {
+    setDisplayName(name);
+    setAvatarPresetId(avType);
+    const preset = AVATAR_PRESETS.find((p) => p.id === avType) ?? AVATAR_PRESETS[0];
+    setCustomization({ ...preset.customization });
+    setIsLobbyOpen(false);
+    setIsOnline(false);
+    showToast(`🎮 Swagatam ${name}! Exploring Chatparva Mela in Standalone 3D Mode!`);
+  };
+
   // Setup Network Manager Callbacks
   useEffect(() => {
     networkManager.onPlayerJoined = (player) => {
@@ -364,6 +406,10 @@ export const MelaGame: React.FC = () => {
       setTokens(data.newTokens);
       soundManager.playWinFanfare();
       showToast(`🎉 Langur Burja Win! You won ${data.winAmount} festival tokens! 🎲`);
+    };
+
+    networkManager.onPingUpdated = (p) => {
+      setPing(p);
     };
 
     networkManager.onError = (msg) => {
@@ -1113,6 +1159,7 @@ export const MelaGame: React.FC = () => {
           displayName={displayName}
           customization={customization}
           speechBubble={speechBubble}
+          isLobby={isLobbyOpen}
           onPositionChange={handlePositionChange}
           onNearbyInteractionChange={setNearbyInteraction}
           virtualJoystick={virtualJoystick}
@@ -1301,49 +1348,72 @@ export const MelaGame: React.FC = () => {
         </div>
       )}
 
-      {/* ─── 2D HUD & Overlay ───────────────────────────────────────────────── */}
-      <GameHUD
-        displayName={displayName}
-        onOpenNameModal={() => setIsNameModalOpen(true)}
-        npr={npr}
-        tokens={tokens}
-        score={score}
-        ping={ping}
-        isOnline={isOnline}
-        connectionState={connectionState}
-        playerCount={remotePlayers.size + 1}
-        onToggleOnline={handleToggleOnline}
-        onOpenInventory={() => setIsInventoryOpen(true)}
-        chatMessages={chatMessages}
-        onSendChat={handleSendChat}
-        onTriggerEmote={handleTriggerEmote}
+      {/* ─── 2D HUD & Overlay (Active when playing) ───────────────────────── */}
+      {!isLobbyOpen && (
+        <GameHUD
+          displayName={displayName}
+          onOpenNameModal={() => setIsLobbyOpen(true)}
+          npr={npr}
+          tokens={tokens}
+          score={score}
+          ping={ping}
+          isOnline={isOnline}
+          connectionState={connectionState}
+          playerCount={remotePlayers.size + 1}
+          onToggleOnline={handleToggleOnline}
+          onOpenInventory={() => setIsInventoryOpen(true)}
+          chatMessages={chatMessages}
+          onSendChat={handleSendChat}
+          onTriggerEmote={handleTriggerEmote}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenControls={() => setIsControlsOpen(true)}
+          onToggleMusic={handleToggleMusic}
+          isMusicPlaying={isMusicPlaying}
+          nearbyInteraction={nearbyInteraction}
+          onInteract={handleInteract}
+          customization={customization}
+          onUpdateCustomization={(c) => setCustomization((prev: AvatarCustomization) => ({ ...prev, ...c }))}
+          showMobileControls={showMobileControls}
+          onJoystickMove={setVirtualJoystick}
+          onJumpTouch={setVirtualJump}
+          heldItem={heldItem}
+          selectedHotbarSlot={selectedHotbarSlot}
+          onSelectHotbarSlot={handleSelectHotbarSlot}
+          onUseHotbarItem={handleUseHotbarItem}
+          chiyaCount={inventory.chiya}
+          selRotiCount={inventory.selRoti}
+          hasChanga={inventory.hasChanga}
+          isKiteFlying={isKiteFlying}
+          timeOfDayPhase={timeOfDayPhase}
+          canJoinDance={canJoinDance}
+          onJoinDance={handleJoinDance}
+          isDancing={isDancing}
+          currentServerId={currentServerId}
+          onSwitchServer={(srv) => {
+            showToast(`Switching to ${srv === "melaverse-server-2" ? "🏔️ Server 2" : "🇳🇵 Server 1"}...`);
+            setCurrentServerId(srv);
+          }}
+        />
+      )}
+
+      {/* ─── Start Interface: Join Lobby Modal with Overview Background ─── */}
+      <JoinLobbyModal
+        isOpen={isLobbyOpen}
+        initialUsername={displayName}
+        initialAvatarType={avatarPresetId}
+        onJoinMultiplayer={handleJoinMultiplayer}
+        onPlaySolo={handlePlaySolo}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onToggleMusic={handleToggleMusic}
-        isMusicPlaying={isMusicPlaying}
-        nearbyInteraction={nearbyInteraction}
-        onInteract={handleInteract}
-        customization={customization}
-        onUpdateCustomization={(c) => setCustomization((prev: AvatarCustomization) => ({ ...prev, ...c }))}
-        showMobileControls={showMobileControls}
-        onJoystickMove={setVirtualJoystick}
-        onJumpTouch={setVirtualJump}
-        heldItem={heldItem}
-        selectedHotbarSlot={selectedHotbarSlot}
-        onSelectHotbarSlot={handleSelectHotbarSlot}
-        onUseHotbarItem={handleUseHotbarItem}
-        chiyaCount={inventory.chiya}
-        selRotiCount={inventory.selRoti}
-        hasChanga={inventory.hasChanga}
-        isKiteFlying={isKiteFlying}
-        timeOfDayPhase={timeOfDayPhase}
-        canJoinDance={canJoinDance}
-        onJoinDance={handleJoinDance}
-        isDancing={isDancing}
-        currentServerId={currentServerId}
-        onSwitchServer={(srv) => {
-          showToast(`Switching to ${srv === "melaverse-server-2" ? "🏔️ Server 2" : "🇳🇵 Server 1"}...`);
-          setCurrentServerId(srv);
-        }}
+        onOpenControls={() => setIsControlsOpen(true)}
+        serverStatus={connectionState === "online" ? "online" : connectionState === "connecting" ? "connecting" : "offline"}
+        ping={ping}
+        serverName={currentServerId === "melaverse-server-2" ? "🏔️ Server 2: Pokhara Chautari" : "🇳🇵 Server 1: Kathmandu Mela"}
+      />
+
+      {/* ─── Controls & Keybindings Guide Modal ─── */}
+      <ControlsModal
+        isOpen={isControlsOpen}
+        onClose={() => setIsControlsOpen(false)}
       />
 
       {/* ─── Inventory Modal (Phase 4) ───────────────────────────────────────── */}

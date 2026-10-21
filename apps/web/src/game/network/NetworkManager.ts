@@ -43,6 +43,7 @@ export class NetworkManager {
   public onTikaResponse?: (data: { success: boolean; alreadyClaimed: boolean; message: string; npr?: number; hasTika?: boolean }) => void;
   public onFoodConsumed?: (data: { itemType: string; remaining: number; score?: number }) => void;
   public onLangurPayout?: (data: { winAmount: number; newTokens: number }) => void;
+  public onPingUpdated?: (ping: number) => void;
   public onError?: (msg: string) => void;
 
   constructor() {
@@ -117,6 +118,7 @@ export class NetworkManager {
                 skinTone: player.skinTone || "#E0AC69",
                 hasTika: Boolean(player.hasTika),
                 hasJamara: Boolean(player.hasTika),
+                avatarType: (player.avatarType as any) || "boy1",
               },
             };
 
@@ -191,6 +193,7 @@ export class NetworkManager {
       // Listen to custom server response events
       this.room.onMessage("pong", (timestamp: number) => {
         this.ping = Math.max(0, Date.now() - timestamp);
+        this.onPingUpdated?.(this.ping);
       });
 
       this.room.onMessage("inventory_update", (data: any) => {

@@ -19,6 +19,7 @@ export class PlayerSchema extends Schema {
   @type("boolean") hasTika: boolean = false; // Dashain Tika & Jamara cosmetic
   @type("boolean") hasReceivedTikaReward: boolean = false; // One-time Tika blessing claim
   @type("boolean") isFlyingKite: boolean = false; // Synchronized Changa flying
+  @type("string") avatarType: string = "boy1";
 
   // Economy & Inventory (NPR Currency)
   @type("number") npr: number = 100; // Nepalese Rupees

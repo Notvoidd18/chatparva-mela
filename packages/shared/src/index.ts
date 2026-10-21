@@ -4,4 +4,5 @@ export {
   PlayerStateSchema,
 } from "./schemas/player.js";
 export * from "./schemas/melaProtocol.js";
+export * from "./avatarPresets.js";
 export * from "./types.js";

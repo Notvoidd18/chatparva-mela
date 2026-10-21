@@ -19,6 +19,7 @@ interface GameHUDProps {
   onSendChat: (text: string, channel: "global" | "proximity") => void;
   onTriggerEmote: (emote: EmoteType) => void;
   onOpenSettings: () => void;
+  onOpenControls?: () => void;
   onToggleMusic: () => boolean;
   isMusicPlaying: boolean;
   nearbyInteraction: string | null;
@@ -60,6 +61,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   onSendChat,
   onTriggerEmote,
   onOpenSettings,
+  onOpenControls,
   onToggleMusic,
   isMusicPlaying,
   nearbyInteraction,
@@ -336,6 +338,30 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           >
             👤 {displayName}
           </button>
+
+          {/* Controls */}
+          {onOpenControls && (
+            <button
+              onClick={onOpenControls}
+              style={{
+                backgroundColor: "rgba(15, 23, 42, 0.85)",
+                color: "#facc15",
+                border: "1px solid #475569",
+                borderRadius: "12px",
+                padding: "8px 12px",
+                fontSize: "13px",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+              aria-label="Controls"
+              title="Controls & Shortcuts"
+            >
+              🎮 <span style={{ display: "none" }}>Controls</span>
+            </button>
+          )}
 
           {/* Settings */}
           <button

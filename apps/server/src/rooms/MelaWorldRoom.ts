@@ -24,6 +24,7 @@ interface ClientJoinOptions {
   hasVest?: boolean;
   vestColor?: string;
   skinTone?: string;
+  avatarType?: string;
 }
 
 interface PlayerInputMessage {
@@ -470,6 +471,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
     if (typeof options?.hasVest === "boolean") player.hasVest = options.hasVest;
     if (options?.vestColor) player.vestColor = options.vestColor;
     if (options?.skinTone) player.skinTone = options.skinTone;
+    if (options?.avatarType) player.avatarType = options.avatarType;
 
     this.state.players.set(client.sessionId, player);
 

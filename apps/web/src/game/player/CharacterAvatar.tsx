@@ -43,6 +43,26 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
   const hasTika = customization.hasTika ?? false;
   const hasJamara = customization.hasJamara ?? hasTika;
 
+  // Resolved Avatar Type Preset (2 boys, 2 girls)
+  const avatarType =
+    customization.avatarType ??
+    (hasTopi
+      ? "boy1"
+      : bodyColor === "#0D9488" || bodyColor === "#059669"
+      ? "girl2"
+      : bodyColor === "#DC2626"
+      ? "girl1"
+      : "boy2");
+  const isGirl = avatarType === "girl1" || avatarType === "girl2";
+  const legColor =
+    avatarType === "girl1"
+      ? "#991B1B"
+      : avatarType === "girl2"
+      ? "#0F766E"
+      : avatarType === "boy2"
+      ? "#1F2937"
+      : "#374151";
+
   // Procedural Limb Animation
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -301,6 +321,51 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
           </mesh>
         )}
 
+        {/* ─── Avatar Specific Cultural Torso Details ─── */}
+        {/* Girl 1: Gunyou Cholo Golden Patuka & Lace */}
+        {avatarType === "girl1" && (
+          <group>
+            {/* Golden Patuka waistband */}
+            <mesh position={[0, -0.22, 0.02]}>
+              <boxGeometry args={[0.59, 0.14, 0.35]} />
+              <meshStandardMaterial color="#F59E0B" roughness={0.5} />
+            </mesh>
+            {/* Golden hem embroidery lace */}
+            <mesh position={[0, -0.32, 0.02]}>
+              <boxGeometry args={[0.57, 0.04, 0.34]} />
+              <meshStandardMaterial color="#FBBF24" metalness={0.7} roughness={0.3} />
+            </mesh>
+          </group>
+        )}
+
+        {/* Girl 2: Festive Dupatta draped across shoulder */}
+        {avatarType === "girl2" && (
+          <mesh position={[-0.04, 0.04, 0.18]} rotation={[0, 0, -0.42]}>
+            <boxGeometry args={[0.18, 0.64, 0.03]} />
+            <meshStandardMaterial color={vestColor} roughness={0.5} />
+          </mesh>
+        )}
+
+        {/* Boy 1: Daura Suruwal diagonal fold line */}
+        {avatarType === "boy1" && (
+          <mesh position={[0.08, 0.08, 0.17]} rotation={[0, 0, 0.35]}>
+            <boxGeometry args={[0.03, 0.45, 0.02]} />
+            <meshStandardMaterial color="#FCD34D" metalness={0.5} />
+          </mesh>
+        )}
+
+        {/* Boy 2: Kurta Golden Buttons */}
+        {avatarType === "boy2" && (
+          <group>
+            {[-0.15, 0, 0.15].map((y, i) => (
+              <mesh key={`btn-${i}`} position={[0, y, 0.18]}>
+                <sphereGeometry args={[0.016, 8, 8]} />
+                <meshStandardMaterial color="#FCD34D" metalness={0.8} roughness={0.2} />
+              </mesh>
+            ))}
+          </group>
+        )}
+
         {/* ─── Head ────────────────────────────────────────────────────────── */}
         <group ref={headRef} position={[0, 0.52, 0]}>
           <mesh castShadow>
@@ -355,7 +420,7 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
             </group>
           )}
 
-          {/* Dhaka Topi */}
+          {/* Dhaka Topi (for Boy 1 / Traditional) */}
           {hasTopi && (
             <group position={[0, 0.22, 0]}>
               <mesh position={[0, 0.03, 0]} castShadow>
@@ -365,6 +430,115 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
               <mesh position={[-0.03, 0.12, 0]} rotation={[0, 0, 0.15]}>
                 <coneGeometry args={[0.2, 0.12, 8]} />
                 <meshStandardMaterial color="#B91C1C" roughness={0.8} />
+              </mesh>
+            </group>
+          )}
+
+          {/* ─── Boy 2: Modern Dark Styled Haircut ─── */}
+          {avatarType === "boy2" && !hasTopi && (
+            <group>
+              <mesh position={[0, 0.2, -0.01]}>
+                <boxGeometry args={[0.4, 0.12, 0.41]} />
+                <meshStandardMaterial color="#1E293B" roughness={0.9} />
+              </mesh>
+              <mesh position={[-0.2, 0.08, -0.01]}>
+                <boxGeometry args={[0.03, 0.18, 0.36]} />
+                <meshStandardMaterial color="#1E293B" roughness={0.9} />
+              </mesh>
+              <mesh position={[0.2, 0.08, -0.01]}>
+                <boxGeometry args={[0.03, 0.18, 0.36]} />
+                <meshStandardMaterial color="#1E293B" roughness={0.9} />
+              </mesh>
+              <mesh position={[0, 0.22, 0.17]} rotation={[0.2, 0, 0]}>
+                <boxGeometry args={[0.34, 0.08, 0.08]} />
+                <meshStandardMaterial color="#0F172A" roughness={0.9} />
+              </mesh>
+            </group>
+          )}
+
+          {/* ─── Girl 1: Traditional Center-Parted Braid & Jhumkas ─── */}
+          {avatarType === "girl1" && !hasTopi && (
+            <group>
+              {/* Crown hair */}
+              <mesh position={[0, 0.19, -0.02]}>
+                <boxGeometry args={[0.4, 0.12, 0.41]} />
+                <meshStandardMaterial color="#111827" roughness={0.8} />
+              </mesh>
+              {/* Center part Sindoor */}
+              <mesh position={[0, 0.22, 0.08]}>
+                <boxGeometry args={[0.025, 0.03, 0.2]} />
+                <meshBasicMaterial color="#DC2626" />
+              </mesh>
+              {/* Traditional Long Braid down back */}
+              <mesh position={[0, 0.04, -0.22]}>
+                <cylinderGeometry args={[0.048, 0.042, 0.2, 8]} />
+                <meshStandardMaterial color="#111827" roughness={0.8} />
+              </mesh>
+              <mesh position={[0, -0.15, -0.24]}>
+                <cylinderGeometry args={[0.042, 0.036, 0.22, 8]} />
+                <meshStandardMaterial color="#111827" roughness={0.8} />
+              </mesh>
+              <mesh position={[0, -0.36, -0.25]}>
+                <cylinderGeometry args={[0.036, 0.028, 0.22, 8]} />
+                <meshStandardMaterial color="#111827" roughness={0.8} />
+              </mesh>
+              {/* Red ribbon tassel at braid tip */}
+              <mesh position={[0, -0.5, -0.25]}>
+                <coneGeometry args={[0.045, 0.1, 8]} />
+                <meshStandardMaterial color="#DC2626" roughness={0.4} />
+              </mesh>
+              {/* Golden Jhumka Earrings */}
+              <mesh position={[-0.21, -0.06, 0.04]}>
+                <sphereGeometry args={[0.032, 8, 8]} />
+                <meshStandardMaterial color="#F59E0B" metalness={0.8} roughness={0.2} />
+              </mesh>
+              <mesh position={[0.21, -0.06, 0.04]}>
+                <sphereGeometry args={[0.032, 8, 8]} />
+                <meshStandardMaterial color="#F59E0B" metalness={0.8} roughness={0.2} />
+              </mesh>
+              {/* Red Bindi Dot */}
+              <mesh position={[0, 0.06, 0.201]}>
+                <circleGeometry args={[0.022, 12]} />
+                <meshBasicMaterial color="#DC2626" />
+              </mesh>
+            </group>
+          )}
+
+          {/* ─── Girl 2: Flowing Long Hair & Hoop Earrings ─── */}
+          {avatarType === "girl2" && !hasTopi && (
+            <group>
+              {/* Crown hair */}
+              <mesh position={[0, 0.19, -0.01]}>
+                <boxGeometry args={[0.41, 0.14, 0.42]} />
+                <meshStandardMaterial color="#18181B" roughness={0.7} />
+              </mesh>
+              {/* Flowing side locks */}
+              <mesh position={[-0.2, -0.06, 0.06]}>
+                <boxGeometry args={[0.05, 0.32, 0.12]} />
+                <meshStandardMaterial color="#18181B" roughness={0.7} />
+              </mesh>
+              <mesh position={[0.2, -0.06, 0.06]}>
+                <boxGeometry args={[0.05, 0.32, 0.12]} />
+                <meshStandardMaterial color="#18181B" roughness={0.7} />
+              </mesh>
+              {/* Back flowing hair */}
+              <mesh position={[0, -0.1, -0.22]}>
+                <boxGeometry args={[0.32, 0.4, 0.09]} />
+                <meshStandardMaterial color="#18181B" roughness={0.7} />
+              </mesh>
+              {/* Golden hoop earrings */}
+              <mesh position={[-0.21, -0.05, 0.04]} rotation={[0, 0, Math.PI / 2]}>
+                <torusGeometry args={[0.035, 0.009, 6, 12]} />
+                <meshStandardMaterial color="#FBBF24" metalness={0.8} roughness={0.2} />
+              </mesh>
+              <mesh position={[0.21, -0.05, 0.04]} rotation={[0, 0, Math.PI / 2]}>
+                <torusGeometry args={[0.035, 0.009, 6, 12]} />
+                <meshStandardMaterial color="#FBBF24" metalness={0.8} roughness={0.2} />
+              </mesh>
+              {/* Rose bindi */}
+              <mesh position={[0, 0.06, 0.201]}>
+                <circleGeometry args={[0.018, 12]} />
+                <meshBasicMaterial color="#F43F5E" />
               </mesh>
             </group>
           )}
@@ -380,6 +554,14 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
             <boxGeometry args={[0.15, 0.14, 0.16]} />
             <meshStandardMaterial color={skinTone} />
           </mesh>
+
+          {/* Traditional Glass Bangles (Chura) */}
+          {isGirl && (
+            <mesh position={[0, -0.48, 0]}>
+              <cylinderGeometry args={[0.095, 0.095, 0.05, 10]} />
+              <meshStandardMaterial color={avatarType === "girl1" ? "#DC2626" : "#0D9488"} metalness={0.4} roughness={0.3} />
+            </mesh>
+          )}
 
           {/* Lattai (Kite String Spool) when flying kite */}
           {heldItem === "kite" && (
@@ -401,6 +583,14 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
             <boxGeometry args={[0.15, 0.14, 0.16]} />
             <meshStandardMaterial color={skinTone} />
           </mesh>
+
+          {/* Traditional Glass Bangles (Chura) */}
+          {isGirl && (
+            <mesh position={[0, -0.48, 0]}>
+              <cylinderGeometry args={[0.095, 0.095, 0.05, 10]} />
+              <meshStandardMaterial color={avatarType === "girl1" ? "#DC2626" : "#0D9488"} metalness={0.4} roughness={0.3} />
+            </mesh>
+          )}
 
           {/* Held Items */}
           {heldItem === "chiya" && (
@@ -463,12 +653,18 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
         )}
       </group>
 
-      {/* ─── Legs (Suruwal) ─────────────────────────────────────────────────── */}
+      {/* ─── Legs (Suruwal / Trousers / Sari) ───────────────────────────────── */}
       <group ref={leftLegRef} position={[-0.16, 0.55, 0]}>
         <mesh position={[0, -0.3, 0]} castShadow>
           <boxGeometry args={[0.2, 0.6, 0.22]} />
-          <meshStandardMaterial color="#374151" roughness={0.8} />
+          <meshStandardMaterial color={legColor} roughness={0.8} />
         </mesh>
+        {isGirl && (
+          <mesh position={[0, -0.52, 0]}>
+            <boxGeometry args={[0.21, 0.04, 0.23]} />
+            <meshStandardMaterial color="#FBBF24" metalness={0.7} roughness={0.3} />
+          </mesh>
+        )}
         <mesh position={[0, -0.58, 0.04]}>
           <boxGeometry args={[0.22, 0.12, 0.28]} />
           <meshStandardMaterial color="#111827" />
@@ -478,8 +674,14 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
       <group ref={rightLegRef} position={[0.16, 0.55, 0]}>
         <mesh position={[0, -0.3, 0]} castShadow>
           <boxGeometry args={[0.2, 0.6, 0.22]} />
-          <meshStandardMaterial color="#374151" roughness={0.8} />
+          <meshStandardMaterial color={legColor} roughness={0.8} />
         </mesh>
+        {isGirl && (
+          <mesh position={[0, -0.52, 0]}>
+            <boxGeometry args={[0.21, 0.04, 0.23]} />
+            <meshStandardMaterial color="#FBBF24" metalness={0.7} roughness={0.3} />
+          </mesh>
+        )}
         <mesh position={[0, -0.58, 0.04]}>
           <boxGeometry args={[0.22, 0.12, 0.28]} />
           <meshStandardMaterial color="#111827" />

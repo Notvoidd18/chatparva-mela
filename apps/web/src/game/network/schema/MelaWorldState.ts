@@ -19,6 +19,7 @@ export class PlayerSchema extends Schema {
   @type("boolean") hasTika: boolean = false;
   @type("boolean") hasReceivedTikaReward: boolean = false;
   @type("boolean") isFlyingKite: boolean = false;
+  @type("string") avatarType: string = "boy1";
 
   // Economy & Inventory (NPR Currency)
   @type("number") npr: number = 100;

@@ -10,6 +10,7 @@ interface LocalPlayerControllerProps {
   displayName: string;
   customization?: Partial<AvatarCustomization>;
   speechBubble?: string | null;
+  isLobby?: boolean;
   onPositionChange?: (pos: { x: number; y: number; z: number; rotationY: number; animState: AnimationState }) => void;
   onNearbyInteractionChange?: (nearby: string | null) => void;
   virtualJoystick?: { x: number; y: number } | null;
@@ -131,6 +132,7 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
   displayName,
   customization,
   speechBubble,
+  isLobby = false,
   onPositionChange,
   onNearbyInteractionChange,
   virtualJoystick,
@@ -238,8 +240,25 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
   }, [gl]);
 
   // Main game tick loop
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const dt = Math.min(delta, 0.08);
+
+    // If in Start Lobby, provide a cinematic overview orbit of the festive map
+    if (isLobby) {
+      const t = state.clock.getElapsedTime() * 0.12;
+      const radius = 62;
+      const camX = Math.sin(t) * radius;
+      const camZ = Math.cos(t) * radius + 5;
+      const camY = 24 + Math.sin(t * 0.6) * 4;
+      camera.position.set(camX, camY, camZ);
+      camera.lookAt(0, 4, 0); // Looking at the illuminated central temple and festival square
+
+      if (playerRef.current) {
+        playerRef.current.position.set(0, 0, 46);
+        playerRef.current.rotation.set(0, 0, 0);
+      }
+      return;
+    }
 
     // Handle transition out of swing (safe ground dismount, no midair floating!)
     if (wasSeatedOnSwingRef.current && !isSeatedOnSwing) {
