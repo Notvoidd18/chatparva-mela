@@ -48,11 +48,18 @@ export class NetworkManager {
     let serverUrl = "";
     if (typeof import.meta !== "undefined" && import.meta.env?.VITE_SERVER_URL) {
       serverUrl = import.meta.env.VITE_SERVER_URL;
+    } else if (typeof window !== "undefined") {
+      const isLocalDevPort = window.location.port === "5173" || window.location.port === "3000";
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      if (isLocalDevPort) {
+        // Local Vite dev server: connects to local Colyseus backend on port 2567
+        serverUrl = `${protocol}//${window.location.hostname}:2567`;
+      } else {
+        // Production deployment (Render / Single origin): uses same host and protocol (port 443 wss://)
+        serverUrl = `${protocol}//${window.location.host}`;
+      }
     } else {
-      const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-      const port = 2567;
-      const protocol = typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:";
-      serverUrl = `${protocol}//${host}:${port}`;
+      serverUrl = "ws://localhost:2567";
     }
 
     this.client = new Client(serverUrl);
