@@ -93,6 +93,55 @@ Open `http://localhost:5173` in your browser and click **"🎮 Enter 3D Mela"**!
 
 ---
 
+## 🌐 Free Hosting & Deployment (GitHub Pages + Render)
+
+Follow this step-by-step guide to host Chatparva Mela completely free with zero lag.
+
+### 1. Push to GitHub
+1. Create a new repository on [GitHub](https://github.com/new) (e.g. `chatparva-mela`).
+2. Run in terminal from `D:\Dashain`:
+   ```bash
+   git remote add origin https://github.com/<your-username>/chatparva-mela.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+### 2. Deploy Backend (Colyseus WebSocket Server) on Render (Free)
+1. Log in to [Render.com](https://render.com) with your GitHub account.
+2. Click **New +** ➔ **Web Service** ➔ Select your `chatparva-mela` repository.
+3. Configure the service:
+   - **Name**: `chatparva-mela-server`
+   - **Region**: `Singapore (Southeast Asia)` *(Gives lowest ping <50ms to Nepal and South Asia!)*
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build:server`
+   - **Start Command**: `npm run start:server`
+   - **Instance Type**: `Free`
+4. Add Environment Variables:
+   - `NODE_ENV` = `production`
+   - `PORT` = `2567`
+   - `CLIENT_ORIGIN` = `*`
+5. Click **Create Web Service**. Render will deploy your Colyseus server and provide a URL like:
+   `https://chatparva-mela-server.onrender.com`
+   *(Your WebSocket URL is: `wss://chatparva-mela-server.onrender.com`)*
+
+### 3. Deploy Frontend on GitHub Pages (Free)
+1. In your GitHub repository, go to **Settings** ➔ **Pages**.
+2. Under **Build and deployment** ➔ **Source**, select **GitHub Actions**.
+3. Under **Settings** ➔ **Secrets and variables** ➔ **Actions**, click **New repository secret**:
+   - **Name**: `VITE_SERVER_URL`
+   - **Value**: `wss://chatparva-mela-server.onrender.com` *(use your Render URL)*
+4. Every time you push to `main`, GitHub Actions automatically builds and deploys your game with zero hosting costs!
+
+### 4. Zero-Lag Optimization (Prevent Free Tier Sleep on Render)
+Free Render web services spin down after 15 minutes of inactivity. To keep your server awake 24/7 with instant 0-second connections:
+1. Go to [cron-job.org](https://cron-job.org) or [UptimeRobot](https://uptimerobot.com) (both 100% free).
+2. Create a ping monitor for:
+   `https://chatparva-mela-server.onrender.com/health`
+3. Set the interval to **every 10 minutes**.
+4. The server stays perpetually warm in memory with 0ms spin-up lag!
+
+---
+
 ## 🧪 Verification & Automated Tests
 
 ```powershell

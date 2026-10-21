@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: chatparva-mela-server
+    runtime: node
+    plan: free
+    region: singapore # Closest server region to Nepal (low latency < 50ms)
+    buildCommand: npm install && npm run build:server
+    startCommand: npm run start:server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 2567
+      - key: CLIENT_ORIGIN
+        value: "*"

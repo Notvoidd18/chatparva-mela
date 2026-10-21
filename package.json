@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --names \"server,web\" --prefix-colors \"cyan,magenta\" \"npm run dev --workspace=apps/server\" \"npm run dev --workspace=apps/web\"",
     "build": "npm run build --workspace=packages/shared && npm run build --workspace=apps/server && npm run build --workspace=apps/web",
+    "build:server": "npm run build --workspace=packages/shared && npm run build --workspace=apps/server",
+    "build:web": "npm run build --workspace=packages/shared && npm run build --workspace=apps/web",
+    "start:server": "node apps/server/dist/index.js",
     "typecheck": "npm run typecheck --workspace=packages/shared && npm run typecheck --workspace=apps/server && npm run typecheck --workspace=apps/web",
     "lint": "eslint \"apps/*/src/**/*.{ts,tsx}\" \"packages/*/src/**/*.{ts,tsx}\"",
     "test": "vitest run --reporter=verbose"
