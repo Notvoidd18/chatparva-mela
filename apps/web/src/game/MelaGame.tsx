@@ -360,6 +360,12 @@ export const MelaGame: React.FC = () => {
       if (data.itemType === "sel_roti") setInventory((prev) => ({ ...prev, selRoti: data.remaining }));
     };
 
+    networkManager.onLangurPayout = (data) => {
+      setTokens(data.newTokens);
+      soundManager.playWinFanfare();
+      showToast(`🎉 Langur Burja Win! You won ${data.winAmount} festival tokens! 🎲`);
+    };
+
     networkManager.onError = (msg) => {
       showToast(`⚠️ ${msg}`);
     };
@@ -1139,6 +1145,7 @@ export const MelaGame: React.FC = () => {
             animState={rPlayer.animState}
             customization={rPlayer.customization}
             speechBubble={rPlayer.speechBubble}
+            isFlyingKite={rPlayer.isFlyingKite}
           />
         ))}
       </Canvas>

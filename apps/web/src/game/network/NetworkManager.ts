@@ -42,6 +42,7 @@ export class NetworkManager {
   public onInventoryUpdated?: (data: { itemType: string; count?: number; hasChanga?: boolean; dhakaTopiColor?: string; npr: number }) => void;
   public onTikaResponse?: (data: { success: boolean; alreadyClaimed: boolean; message: string; npr?: number; hasTika?: boolean }) => void;
   public onFoodConsumed?: (data: { itemType: string; remaining: number; score?: number }) => void;
+  public onLangurPayout?: (data: { winAmount: number; newTokens: number }) => void;
   public onError?: (msg: string) => void;
 
   constructor() {
@@ -202,6 +203,10 @@ export class NetworkManager {
 
       this.room.onMessage("tika_response", (data: any) => {
         this.onTikaResponse?.(data);
+      });
+
+      this.room.onMessage("langur_payout", (data: any) => {
+        this.onLangurPayout?.(data);
       });
 
       this.room.onMessage("error", (msg: string) => {

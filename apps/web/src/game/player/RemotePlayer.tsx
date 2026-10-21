@@ -11,6 +11,7 @@ interface RemotePlayerProps {
   animState: AnimationState;
   customization?: Partial<AvatarCustomization>;
   speechBubble?: string | null;
+  isFlyingKite?: boolean;
 }
 
 export const RemotePlayer: React.FC<RemotePlayerProps> = ({
@@ -20,15 +21,17 @@ export const RemotePlayer: React.FC<RemotePlayerProps> = ({
   animState,
   customization,
   speechBubble,
+  isFlyingKite = false,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const currentPos = useRef(new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z));
   const currentRotY = useRef(targetRotationY);
+  const kiteGroupRef = useRef<THREE.Group>(null);
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     if (!groupRef.current) return;
 
-    // Smooth dead-reckoning lerp for position (factor 0.2 per frame at 60fps)
+    // Smooth dead-reckoning lerp for position (factor 0.22 per frame at 60fps)
     currentPos.current.lerp(
       new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z),
       0.22
@@ -42,17 +45,41 @@ export const RemotePlayer: React.FC<RemotePlayerProps> = ({
 
     groupRef.current.position.copy(currentPos.current);
     groupRef.current.rotation.y = currentRotY.current;
+
+    // Animate remote kite swaying in the wind
+    if (kiteGroupRef.current && isFlyingKite) {
+      const t = clock.getElapsedTime();
+      kiteGroupRef.current.position.set(Math.sin(t * 2) * 1.5, 18 + Math.cos(t * 1.8) * 0.8, -12);
+      kiteGroupRef.current.rotation.z = Math.sin(t * 3) * 0.15;
+    }
   });
 
   return (
     <group ref={groupRef} position={[targetPosition.x, targetPosition.y, targetPosition.z]}>
       <CharacterAvatar
         displayName={displayName}
-        animState={animState}
+        animState={isFlyingKite ? "flying_kite" : animState}
         customization={customization}
         speechBubble={speechBubble}
         isLocalPlayer={false}
+        heldItem={isFlyingKite ? "kite" : null}
       />
+
+      {/* Synchronized Dashain Changa Kite Soaring for Remote Player */}
+      {isFlyingKite && (
+        <group ref={kiteGroupRef} position={[0, 18, -12]}>
+          <group rotation={[0, 0, Math.PI / 4]}>
+            <mesh>
+              <planeGeometry args={[2.2, 2.2]} />
+              <meshBasicMaterial color={customization?.color || "#38BDF8"} side={THREE.DoubleSide} />
+            </mesh>
+            <mesh position={[0, -1.2, 0.01]}>
+              <coneGeometry args={[0.3, 0.7, 3]} />
+              <meshBasicMaterial color="#FBBF24" side={THREE.DoubleSide} />
+            </mesh>
+          </group>
+        </group>
+      )}
     </group>
   );
 };

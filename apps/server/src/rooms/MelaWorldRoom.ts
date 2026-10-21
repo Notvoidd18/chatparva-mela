@@ -118,9 +118,10 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       player.y = Math.max(WORLD_BOUNDS.minY, Math.min(WORLD_BOUNDS.maxY, message.y));
       player.rotationY = message.rotationY;
 
-      // If player is on the swing, don't let free-walking override swinging state
+      // If player is on the swing, don't let free-walking override swinging state or coordinates
       if (this.state.pingSwing.occupantSessionId === client.sessionId) {
         player.animState = "swinging";
+        return;
       } else if (typeof message.animState === "string") {
         player.animState = message.animState;
       }
@@ -193,7 +194,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       const swingPos = { x: -26, y: 0, z: -10 };
       const dist = Math.hypot(player.x - swingPos.x, player.z - swingPos.z);
 
-      if (dist > MOVEMENT_LIMITS.INTERACTION_DISTANCE) return;
+      if (dist > 8.0) return;
 
       if (this.state.pingSwing.occupantSessionId === client.sessionId) {
         // Safe Dismount
@@ -210,6 +211,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
         this.state.pingSwing.occupantName = player.displayName;
         player.animState = "swinging";
         player.x = swingPos.x;
+        player.y = 0.5;
         player.z = swingPos.z;
       }
     });
@@ -330,13 +332,19 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       if (this.state.pingSwing.occupantSessionId === client.sessionId) {
         const now = Date.now();
         const lastPump = this.playerLastEmoteTime.get(`pump_${client.sessionId}`) ?? 0;
-        if (now - lastPump < 450) return; // 450ms cooldown between pumps
+        if (now - lastPump < 350) return; // 350ms cooldown between pumps
         this.playerLastEmoteTime.set(`pump_${client.sessionId}`, now);
 
         this.state.pingSwing.isPumping = true;
-        // Increase swing speed up to realistic max limit
-        if (this.state.pingSwing.swingSpeed < 1.8) {
-          this.state.pingSwing.swingSpeed += 0.35;
+        // Directional momentum boost
+        const currentSpeed = this.state.pingSwing.swingSpeed;
+        const boost = 0.45;
+        if (Math.abs(currentSpeed) < 0.1) {
+          this.state.pingSwing.swingSpeed = boost;
+        } else if (currentSpeed > 0) {
+          this.state.pingSwing.swingSpeed = Math.min(2.4, currentSpeed + boost);
+        } else {
+          this.state.pingSwing.swingSpeed = Math.max(-2.4, currentSpeed - boost);
         }
       }
     });
@@ -350,7 +358,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       if (!diya) return;
 
       const dist = Math.hypot(player.x - diya.x, player.z - diya.z);
-      if (dist > MOVEMENT_LIMITS.INTERACTION_DISTANCE) return;
+      if (dist > 8.0) return;
 
       if (!diya.isLit) {
         diya.isLit = true;
@@ -521,12 +529,13 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       // Clamp swing angle to max ~68 degrees (1.2 radians)
       swing.swingAngle = Math.max(-1.2, Math.min(1.2, swing.swingAngle));
 
-      // Keep occupant pinned to swing base in world space
+      // Keep occupant pinned to swing seat in world space along Z axis (matching FestivalWorld 3D ropes)
       const occupant = this.state.players.get(swing.occupantSessionId);
       if (occupant) {
-        occupant.x = -26 + Math.sin(swing.swingAngle) * 2.2;
-        occupant.y = Math.abs(1 - Math.cos(swing.swingAngle)) * 1.5;
-        occupant.z = -10;
+        occupant.x = -26;
+        occupant.y = Math.max(0.3, 11.3 - Math.cos(swing.swingAngle) * 10.4 + 0.3);
+        occupant.z = -10 - Math.sin(swing.swingAngle) * 10.4;
+        occupant.animState = "swinging";
       }
     } else {
       // Free damping to rest when empty
@@ -606,6 +615,14 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       if (totalWin > 0) {
         player.tokens += totalWin;
         player.score += Math.floor(totalWin / 2);
+
+        const client = this.clients.find((c) => c.sessionId === sessionId);
+        if (client) {
+          client.send("langur_payout", {
+            winAmount: totalWin,
+            newTokens: player.tokens,
+          });
+        }
       }
     }
   }
