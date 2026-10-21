@@ -113,7 +113,7 @@ Follow this step-by-step guide to host Chatparva Mela completely free with zero 
    - **Name**: `chatparva-mela-server`
    - **Region**: `Singapore (Southeast Asia)` *(Gives lowest ping <50ms to Nepal and South Asia!)*
    - **Runtime**: `Node`
-   - **Build Command**: `npm install && npm run build:server`
+   - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm run start:server`
    - **Instance Type**: `Free`
 4. Add Environment Variables:
