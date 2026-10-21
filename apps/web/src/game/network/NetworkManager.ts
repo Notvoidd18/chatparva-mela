@@ -1,5 +1,6 @@
 import { Client, Room } from "@colyseus/sdk";
 import { soundManager } from "../audio/SoundManager.js";
+import { MelaWorldState } from "./schema/MelaWorldState.js";
 import type {
   AnimationState,
   AvatarCustomization,
@@ -72,107 +73,119 @@ export class NetworkManager {
   ): Promise<boolean> {
     this.currentRoomName = roomName;
     try {
-      this.room = await this.client.joinOrCreate(roomName, {
-        displayName,
-        ...customization,
-      });
+      this.room = await this.client.joinOrCreate(
+        roomName,
+        {
+          displayName,
+          ...customization,
+        },
+        MelaWorldState
+      );
 
       this.isConnected = true;
       this.onStatusChange?.(true);
 
-      // Listen to Remote Players
-      this.room.state.players.onAdd((player: any, sessionId: string) => {
-        if (sessionId === this.room?.sessionId) return; // Ignore local player
+      const knownRemotePlayers = new Set<string>();
+      let lastProcessedMessageCount = 0;
 
-        const rPlayer: RemotePlayerData = {
-          sessionId,
-          displayName: player.displayName,
-          position: { x: player.x, y: player.y, z: player.z },
-          rotationY: player.rotationY,
-          animState: player.animState,
-          isFlyingKite: player.isFlyingKite,
-          customization: {
-            color: player.color,
-            dhakaTopiColor: player.dhakaTopiColor,
-            hasDhakaTopi: player.hasDhakaTopi,
-            hasVest: player.hasVest,
-            vestColor: player.vestColor,
-            skinTone: player.skinTone,
-            hasTika: player.hasTika,
-            hasJamara: player.hasTika,
-          },
-        };
+      // Reliable, typed state synchronization via Colyseus Schema
+      this.room.onStateChange((state: MelaWorldState) => {
+        if (!state) return;
 
-        this.onPlayerJoined?.(rPlayer);
+        // Synchronize remote players
+        if (state.players) {
+          const currentRemoteIds = new Set<string>();
 
-        player.onChange(() => {
-          rPlayer.position = { x: player.x, y: player.y, z: player.z };
-          rPlayer.rotationY = player.rotationY;
-          rPlayer.animState = player.animState;
-          rPlayer.isFlyingKite = player.isFlyingKite;
-          rPlayer.customization.hasTika = player.hasTika;
-          rPlayer.customization.hasJamara = player.hasTika;
-          rPlayer.customization.dhakaTopiColor = player.dhakaTopiColor;
-          this.onPlayerUpdated?.(rPlayer);
-        });
-      });
+          state.players.forEach((player, sessionId) => {
+            if (sessionId === this.room?.sessionId) return;
+            currentRemoteIds.add(sessionId);
 
-      this.room.state.players.onRemove((_: any, sessionId: string) => {
-        this.onPlayerLeft?.(sessionId);
-      });
+            const rPlayer: RemotePlayerData = {
+              sessionId,
+              displayName: player.displayName || "Yatri",
+              position: { x: player.x, y: player.y, z: player.z },
+              rotationY: player.rotationY || 0,
+              animState: (player.animState as AnimationState) || "idle",
+              isFlyingKite: Boolean(player.isFlyingKite),
+              customization: {
+                color: player.color || "#C41E3A",
+                dhakaTopiColor: player.dhakaTopiColor || "#8B0000",
+                hasDhakaTopi: player.hasDhakaTopi ?? true,
+                hasVest: player.hasVest ?? true,
+                vestColor: player.vestColor || "#D97706",
+                skinTone: player.skinTone || "#E0AC69",
+                hasTika: Boolean(player.hasTika),
+                hasJamara: Boolean(player.hasTika),
+              },
+            };
 
-      // Listen to Swing State
-      if (this.room.state.pingSwing) {
-        this.room.state.pingSwing.onChange(() => {
-          const sw = this.room!.state.pingSwing;
-          this.onSwingUpdated?.({
-            angle: sw.swingAngle,
-            occupantId: sw.occupantSessionId,
-            occupantName: sw.occupantName,
+            if (!knownRemotePlayers.has(sessionId)) {
+              knownRemotePlayers.add(sessionId);
+              this.onPlayerJoined?.(rPlayer);
+            } else {
+              this.onPlayerUpdated?.(rPlayer);
+            }
           });
-        });
-      }
 
-      // Listen to Diyas
-      if (this.room.state.diyas) {
-        this.room.state.diyas.forEach((diya: any) => {
-          diya.onChange(() => {
+          // Detect departed players
+          for (const prevId of Array.from(knownRemotePlayers)) {
+            if (!currentRemoteIds.has(prevId)) {
+              knownRemotePlayers.delete(prevId);
+              this.onPlayerLeft?.(prevId);
+            }
+          }
+        }
+
+        // Synchronize Linge Ping swing
+        if (state.pingSwing) {
+          this.onSwingUpdated?.({
+            angle: state.pingSwing.swingAngle,
+            occupantId: state.pingSwing.occupantSessionId,
+            occupantName: state.pingSwing.occupantName,
+          });
+        }
+
+        // Synchronize Tihar Diya stations
+        if (state.diyas) {
+          state.diyas.forEach((diya) => {
             this.onDiyaUpdated?.({
               id: diya.id,
               isLit: diya.isLit,
               litBy: diya.litBy,
             });
           });
-        });
-      }
+        }
 
-      // Listen to Langur Burja
-      if (this.room.state.langurBurja) {
-        this.room.state.langurBurja.onChange(() => {
-          const lb = this.room!.state.langurBurja;
+        // Synchronize Langur Burja game state
+        if (state.langurBurja) {
+          const lb = state.langurBurja;
           this.onLangurUpdated?.({
             phase: lb.phase,
             timer: lb.timerRemaining,
             dice: [lb.d1, lb.d2, lb.d3, lb.d4, lb.d5, lb.d6],
             roundId: lb.roundId,
           });
-        });
-      }
+        }
 
-      // Listen to Chat messages
-      if (this.room.state.messages) {
-        this.room.state.messages.onAdd((msg: any) => {
-          this.onChatMessage?.({
-            id: msg.id,
-            senderId: msg.senderId,
-            senderName: msg.senderName,
-            text: msg.text,
-            timestamp: msg.timestamp,
-            channel: msg.channel as any,
-            isSystem: msg.senderId === "system",
-          });
-        });
-      }
+        // Synchronize chat messages
+        if (state.messages && state.messages.length > lastProcessedMessageCount) {
+          for (let i = lastProcessedMessageCount; i < state.messages.length; i++) {
+            const msg = state.messages[i];
+            if (msg) {
+              this.onChatMessage?.({
+                id: msg.id,
+                senderId: msg.senderId,
+                senderName: msg.senderName,
+                text: msg.text,
+                timestamp: msg.timestamp,
+                channel: msg.channel as any,
+                isSystem: msg.senderId === "system",
+              });
+            }
+          }
+          lastProcessedMessageCount = state.messages.length;
+        }
+      });
 
       // Listen to custom server response events
       this.room.onMessage("pong", (timestamp: number) => {
