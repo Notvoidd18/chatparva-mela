@@ -184,8 +184,13 @@ export const MelaGame: React.FC = () => {
           showToast("Kite string safely reeled in! 🪁");
         }
         if (isSeatedOnSwing) {
-          setIsSeatedOnSwing(false);
-          networkManager.interactPingSwing();
+          if (isOnline) {
+            networkManager.interactPingSwing();
+          } else {
+            setIsSeatedOnSwing(false);
+            setSwingAngle(0);
+            setSwingSpeed(0);
+          }
         }
       } else if (e.code === "KeyI") {
         setIsInventoryOpen((prev) => !prev);
@@ -211,8 +216,14 @@ export const MelaGame: React.FC = () => {
   const swingAngleRef = useRef<number>(0);
   const swingSpeedRef = useRef<number>(0);
 
-  // Continuous 60 FPS pendulum physics for ultra-smooth Linge Ping swinging
+  // Continuous 60 FPS pendulum physics for ultra-smooth Linge Ping swinging (offline solo mode only)
   useEffect(() => {
+    // In multiplayer mode, the server is the single authoritative source of swing physics.
+    // Running a local simulation concurrently causes violent desync / mid-air glitching.
+    if (isOnline) {
+      return;
+    }
+
     if (!isSeatedOnSwing) {
       swingAngleRef.current = 0;
       swingSpeedRef.current = 0;
@@ -250,7 +261,7 @@ export const MelaGame: React.FC = () => {
 
     animationFrameId = requestAnimationFrame(animateSwing);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [isSeatedOnSwing]);
+  }, [isSeatedOnSwing, isOnline]);
 
   // Check Server Status on initial mount without joining room
   const serverHttpUrl =
@@ -590,7 +601,15 @@ export const MelaGame: React.FC = () => {
         setIsSansthaModalOpen(false);
         setActiveStallModal(null);
         setActiveTikaModal(null);
-        setIsSeatedOnSwing(false);
+        if (isSeatedOnSwing) {
+          if (isOnline) {
+            networkManager.interactPingSwing();
+          } else {
+            setIsSeatedOnSwing(false);
+            setSwingAngle(0);
+            setSwingSpeed(0);
+          }
+        }
         setIsSeatedAtTaas(false);
         setIsSeatedAtAama(false);
         setIsSeatedAtChautari(false);

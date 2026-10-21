@@ -98,6 +98,13 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
         return;
       }
 
+      // If player is on the swing, server physics loop is the authoritative source of position
+      // Do not allow client walking updates to fight server pendulum simulation
+      if (this.state.pingSwing.occupantSessionId === client.sessionId) {
+        player.animState = "swinging";
+        return;
+      }
+
       // Delta validation (speed anticheat)
       const dx = message.x - player.x;
       const dz = message.z - player.z;
@@ -119,11 +126,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       player.y = Math.max(WORLD_BOUNDS.minY, Math.min(WORLD_BOUNDS.maxY, message.y));
       player.rotationY = message.rotationY;
 
-      // If player is on the swing, don't let free-walking override swinging state or coordinates
-      if (this.state.pingSwing.occupantSessionId === client.sessionId) {
-        player.animState = "swinging";
-        return;
-      } else if (typeof message.animState === "string") {
+      if (typeof message.animState === "string") {
         player.animState = message.animState;
       }
     });
@@ -210,6 +213,9 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
         // Mount
         this.state.pingSwing.occupantSessionId = client.sessionId;
         this.state.pingSwing.occupantName = player.displayName;
+        if (Math.abs(this.state.pingSwing.swingSpeed) < 0.2) {
+          this.state.pingSwing.swingSpeed = 1.0;
+        }
         player.animState = "swinging";
         player.x = swingPos.x;
         player.y = 0.5;
@@ -535,7 +541,7 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       const occupant = this.state.players.get(swing.occupantSessionId);
       if (occupant) {
         occupant.x = -26;
-        occupant.y = Math.max(0.3, 11.3 - Math.cos(swing.swingAngle) * 10.4 + 0.3);
+        occupant.y = Math.max(0.3, 11.2 - Math.cos(swing.swingAngle) * 10.4 + 0.3);
         occupant.z = -10 - Math.sin(swing.swingAngle) * 10.4;
         occupant.animState = "swinging";
       }

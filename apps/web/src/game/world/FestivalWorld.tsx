@@ -201,7 +201,11 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     if (swingPivotRef.current) {
-      swingPivotRef.current.rotation.x = swingAngle;
+      swingPivotRef.current.rotation.x = THREE.MathUtils.lerp(
+        swingPivotRef.current.rotation.x,
+        swingAngle,
+        0.35
+      );
     }
     if (prayerFlagsRef.current) {
       prayerFlagsRef.current.children.forEach((flag, idx) => {
@@ -554,16 +558,6 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             <boxGeometry args={[1.8, 0.12, 0.45]} />
             <meshStandardMaterial color="#6B4226" roughness={0.8} />
           </mesh>
-          {/* Synchronized Remote Rider on the physical swinging seat in multiplayer */}
-          {swingOccupantName && !isSeatedOnSwing && (
-            <group position={[0, -10.4, 0]} rotation={[0, 0, 0]}>
-              <CharacterAvatar
-                displayName={swingOccupantName}
-                animState="swinging"
-                customization={{ color: "#2563EB", vestColor: "#D97706", hasDhakaTopi: true }}
-              />
-            </group>
-          )}
         </group>
 
         {/* Interaction Prompt */}
@@ -586,6 +580,8 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             >
               {isSeatedOnSwing
                 ? "Dismount Ping [E]"
+                : swingOccupantName
+                ? `🎋 Linge Ping (Occupied by ${swingOccupantName})`
                 : nearbyInteraction === "ping"
                 ? "🎋 [E] Ride Traditional Ping!"
                 : "🎋 Linge Ping Swing"}

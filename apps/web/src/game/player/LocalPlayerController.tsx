@@ -277,11 +277,11 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
     // If seated on the swing, anchor player directly to the swing seat
     if (isSeatedOnSwing) {
       wasSeatedOnSwingRef.current = true;
-      // Swing center is at x: -26, y: 11.3 (pivot), z: -10
+      // Swing center is at x: -26, y: 11.2 (pivot), z: -10
       // Rope length is ~10.4m
       const ropeLength = 10.4;
       const seatX = -26;
-      const seatY = 11.3 - Math.cos(swingAngle) * ropeLength + 0.3;
+      const seatY = 11.2 - Math.cos(swingAngle) * ropeLength + 0.3;
       const seatZ = -10 - Math.sin(swingAngle) * ropeLength;
 
       posRef.current.set(seatX, Math.max(0.3, seatY), seatZ);

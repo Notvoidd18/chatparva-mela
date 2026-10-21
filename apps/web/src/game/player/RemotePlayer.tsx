@@ -31,10 +31,11 @@ export const RemotePlayer: React.FC<RemotePlayerProps> = ({
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
 
-    // Smooth dead-reckoning lerp for position (factor 0.22 per frame at 60fps)
+    // Fast tracking for high-velocity pendulum swinging, smooth dead-reckoning for walking
+    const lerpFactor = animState === "swinging" ? 0.85 : 0.22;
     currentPos.current.lerp(
       new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z),
-      0.22
+      lerpFactor
     );
 
     // Smooth angular interpolation
@@ -45,6 +46,15 @@ export const RemotePlayer: React.FC<RemotePlayerProps> = ({
 
     groupRef.current.position.copy(currentPos.current);
     groupRef.current.rotation.y = currentRotY.current;
+
+    // Tilt with Linge Ping swing arc when swinging
+    if (animState === "swinging") {
+      const relZ = currentPos.current.z - (-10);
+      const angle = -Math.asin(Math.max(-1, Math.min(1, relZ / 10.4)));
+      groupRef.current.rotation.x = angle;
+    } else {
+      groupRef.current.rotation.x = 0;
+    }
 
     // Animate remote kite swaying in the wind
     if (kiteGroupRef.current && isFlyingKite) {
