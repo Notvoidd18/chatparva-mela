@@ -1,0 +1,78 @@
+{
+  "name": "MelaVerse Nepal Asset Library",
+  "version": "1.0.0",
+  "license": "CC0 1.0 Universal (Public Domain) / Original Procedural Artwork",
+  "assets": [
+    {
+      "id": "avatar-nepali-humanoid",
+      "name": "Low-Poly Nepali Humanoid Avatar",
+      "type": "character",
+      "geometry": "procedural-segmented-rig",
+      "components": [
+        "head (0.38m cube, skin-tone #E0AC69)",
+        "dhaka_topi (sloped cylinder + cone, crimson geometric)",
+        "torso (0.55m x 0.65m x 0.32m)",
+        "traditional_bhoto_vest (saffron/gold outer layer)",
+        "arms_and_hands (0.18m x 0.55m)",
+        "legs_and_shoes (0.2m x 0.6m charcoal suruwal)",
+        "dashain_tika (crimson forehead circle)"
+      ],
+      "animations": ["idle", "walk", "run", "jump", "namaste", "nach", "swinging"],
+      "polygonBudget": "< 1200 triangles",
+      "license": "CC0-1.0 Original"
+    },
+    {
+      "id": "attraction-linge-ping",
+      "name": "Traditional Nepali Bamboo Linge Ping",
+      "type": "structure/attraction",
+      "components": [
+        "4x bamboo_tripod_poles (12.5m height, 0.35m diameter)",
+        "apex_lashings (interlocking rope knots)",
+        "crossbar_axis (3.8m width)",
+        "suspension_ropes (10.4m hemp cable)",
+        "wooden_seat_plank (1.8m x 0.6m)"
+      ],
+      "interaction": {
+        "type": "seated-ride",
+        "radius": 4.5,
+        "harmonicFrequency": "2.0 rad/s"
+      },
+      "license": "CC0-1.0 Original"
+    },
+    {
+      "id": "game-booth-langur-burja",
+      "name": "Langur Burja / Jhandi Munda Festive Booth",
+      "type": "structure/minigame",
+      "components": [
+        "timber_kiosk (6.5m x 3.6m x 4.5m)",
+        "green_felt_tabletop (5.5m x 1.0m)",
+        "canopy_awning (crimson & gold sloped cloth)",
+        "6x wooden_dice (symbols: jhanda, burja, ita, paan, hukum, chidi)"
+      ],
+      "license": "CC0-1.0 Original"
+    },
+    {
+      "id": "tihar-lighting-rangoli",
+      "name": "Tihar Festive Mandala & Diya Stations",
+      "type": "environment/props",
+      "components": [
+        "lotus_rangoli_mandala (7.5m radius concentric pattern)",
+        "central_brass_urn (0.9m x 0.8m)",
+        "8x terracotta_clay_diyas (0.26m diameter)",
+        "animated_flame_meshes (point light + procedural flicker)"
+      ],
+      "license": "CC0-1.0 Original"
+    },
+    {
+      "id": "modular-market-stall-kit",
+      "name": "Modular Nepali Bazaar Festival Stalls",
+      "variants": [
+        { "id": "stall-chiya", "name": "Chiya Pasal", "accent": "saffron #EA580C", "prop": "copper kettle & glasses" },
+        { "id": "stall-sel-roti", "name": "Sel Roti & Mithai", "accent": "teal #0D9488", "prop": "brass platter with fried breads" },
+        { "id": "stall-changa", "name": "Changa & Lattai Kite Shop", "accent": "red #DC2626", "prop": "hanging diamond kites" },
+        { "id": "stall-dhaka", "name": "Palpali Dhaka Fabric", "accent": "gold #B45309", "prop": "geometric textiles" }
+      ],
+      "license": "CC0-1.0 Original"
+    }
+  ]
+}
