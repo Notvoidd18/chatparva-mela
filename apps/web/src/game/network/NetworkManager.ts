@@ -208,6 +208,9 @@ export class NetworkManager {
         this.onError?.(msg);
       });
 
+      // Send immediate initial ping
+      this.room.send("ping", Date.now());
+
       // Periodic ping
       this.pingInterval = setInterval(() => {
         if (this.isConnected && this.room) {

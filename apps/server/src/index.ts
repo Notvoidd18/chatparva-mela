@@ -56,10 +56,29 @@ const webDistPath = candidatePaths.find((p) => fs.existsSync(path.join(p, "index
 
 if (webDistPath) {
   console.log(`[Static] Serving web client from: ${webDistPath}`);
-  app.use(express.static(webDistPath));
+
+  // Serve static assets with appropriate caching
+  app.use(
+    express.static(webDistPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith(".html")) {
+          // Never cache HTML so normal browser tabs load the latest release immediately
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+          res.setHeader("Pragma", "no-cache");
+          res.setHeader("Expires", "0");
+        } else if (filePath.includes("assets")) {
+          // Hashed JS/CSS chunks can be cached safely
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    })
+  );
 
   app.get("*", (req, res, next) => {
     if (req.path === "/health" || req.path.startsWith("/colyseus") || req.path.startsWith("/matchmake")) return next();
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.sendFile(path.join(webDistPath, "index.html"));
   });
 } else {
