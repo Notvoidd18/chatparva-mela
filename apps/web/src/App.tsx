@@ -30,14 +30,17 @@ export default function App() {
   const [activeView, setActiveView] = useState<"game" | "status">("status");
 
   const serverHttpUrl =
-    import.meta.env.VITE_SERVER_URL_HTTP ?? "http://localhost:2567";
+    import.meta.env.VITE_SERVER_URL_HTTP ??
+    (typeof window !== "undefined" && window.location.port !== "5173" && window.location.port !== "3000"
+      ? ""
+      : "http://localhost:2567");
   const appName = import.meta.env.VITE_APP_NAME ?? "Chatparva Mela";
 
   useEffect(() => {
     setFetchState({ phase: "loading" });
 
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 6000);
 
     fetch(`${serverHttpUrl}/health`, { signal: controller.signal })
       .then(async (res) => {
@@ -64,6 +67,16 @@ export default function App() {
       clearTimeout(timeoutId);
     };
   }, [serverHttpUrl]);
+
+  // Seamlessly transition to 3D game once server verification succeeds
+  useEffect(() => {
+    if (fetchState.phase === "success") {
+      const enterTimer = window.setTimeout(() => {
+        setActiveView("game");
+      }, 1200);
+      return () => clearTimeout(enterTimer);
+    }
+  }, [fetchState.phase]);
 
   return (
     <div style={{ width: "100vw", height: "100vh", position: "relative", overflow: "hidden" }}>
