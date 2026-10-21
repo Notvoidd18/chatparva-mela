@@ -7,6 +7,15 @@ class SoundEngine {
   public isMuted: boolean = false;
   public isMusicMuted: boolean = false;
   public volume: number = 0.5;
+  private lastPlayed = new Map<string, number>();
+
+  public canPlay(id: string, cooldownMs: number): boolean {
+    const now = performance.now();
+    const last = this.lastPlayed.get(id) ?? 0;
+    if (now - last < cooldownMs) return false;
+    this.lastPlayed.set(id, now);
+    return true;
+  }
 
   private initContext() {
     if (!this.ctx && typeof window !== "undefined") {
@@ -40,7 +49,7 @@ class SoundEngine {
 
   /** Namaste Emote Sound (Gentle temple chime & resonating harmonic tone) */
   public playNamasteSound() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("namaste", 1200)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -64,7 +73,7 @@ class SoundEngine {
 
   /** Nach / Dance Emote Sound (Energetic Nepali Jhyaure folk dance Madal groove) */
   public playNachSong() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("nach", 3000)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -106,7 +115,7 @@ class SoundEngine {
 
   /** Wave Emote Sound (Friendly ascending two-tone whistle) */
   public playWaveSound() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("wave", 1000)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -129,7 +138,7 @@ class SoundEngine {
 
   /** Cheer Emote Sound (Celebration fanfare & joyful trumpet flourish) */
   public playCheerSound() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("cheer", 1500)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -152,7 +161,7 @@ class SoundEngine {
 
   /** Chiya drinking sip sound */
   public playChiyaSip() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("chiya", 1000)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -173,7 +182,7 @@ class SoundEngine {
 
   /** Sel Roti crispy crunch sound */
   public playSelRotiCrunch() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("crunch", 1000)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -196,7 +205,7 @@ class SoundEngine {
 
   /** Changa kite flying wind & string sound */
   public playKiteWhoosh() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("kite", 1200)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -217,7 +226,7 @@ class SoundEngine {
 
   /** Dhaka Topi wearing chime */
   public playTopiChime() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("topi", 800)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -237,7 +246,7 @@ class SoundEngine {
 
   /** Temple bell chime */
   public playTempleBell() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("bell", 600)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -261,7 +270,7 @@ class SoundEngine {
 
   /** Madal drum strike */
   public playMadalBeat(pitch: "high" | "low" = "high", customVolume?: number) {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay(`madal_${pitch}`, 140)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -287,7 +296,7 @@ class SoundEngine {
 
   /** Diya flame lighting sizzle / chime */
   public playDiyaLight() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("diya", 600)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -311,7 +320,7 @@ class SoundEngine {
 
   /** Swing rope creak */
   public playSwingCreak() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("swing", 1200)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -335,7 +344,7 @@ class SoundEngine {
 
   /** Dice shake & roll */
   public playDiceRoll() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("dice", 1200)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -357,7 +366,7 @@ class SoundEngine {
 
   /** Card deal / snap */
   public playCardSnap() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("card", 160)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -381,7 +390,7 @@ class SoundEngine {
 
   /** Footstep sound */
   public playFootstep() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("step", 280)) return;
     this.initContext();
     if (!this.ctx) return;
 
@@ -405,7 +414,7 @@ class SoundEngine {
 
   /** Win fanfare */
   public playWinFanfare() {
-    if (this.isMuted) return;
+    if (this.isMuted || !this.canPlay("fanfare", 2500)) return;
     this.initContext();
     if (!this.ctx) return;
 

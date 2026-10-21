@@ -252,29 +252,33 @@ export const MelaGame: React.FC = () => {
     return () => cancelAnimationFrame(animationFrameId);
   }, [isSeatedOnSwing]);
 
-  // Connect to Multiplayer Server on initial mount or server switch (Phase 2)
-  useEffect(() => {
-    setConnectionState("connecting");
-    setRemotePlayers(new Map());
-    networkManager.connect(displayName, customization, currentServerId).then((connected) => {
-      if (connected) {
-        setIsOnline(true);
-        setConnectionState("online");
-        showToast(
-          `Connected to ${
-            currentServerId === "melaverse-server-2"
-              ? "🏔️ Server 2: Pokhara Chautari"
-              : "🇳🇵 Server 1: Kathmandu Mela"
-          }! 🌐`
-        );
-      } else {
-        setIsOnline(false);
-        setConnectionState("disconnected");
-      }
-    });
-  }, [displayName, currentServerId]);
+  // Check Server Status on initial mount without joining room
+  const serverHttpUrl =
+    import.meta.env.VITE_SERVER_URL_HTTP ??
+    (typeof window !== "undefined" && window.location.port !== "5173" && window.location.port !== "3000"
+      ? ""
+      : "http://localhost:2567");
 
-  // Join Lobby Handlers
+  useEffect(() => {
+    const controller = new AbortController();
+    const t0 = performance.now();
+    fetch(`${serverHttpUrl}/health`, { signal: controller.signal })
+      .then((res) => {
+        if (res.ok) {
+          const rtt = Math.max(12, Math.round(performance.now() - t0));
+          setPing(rtt);
+          setConnectionState("online");
+        } else {
+          setConnectionState("disconnected");
+        }
+      })
+      .catch(() => {
+        setConnectionState("disconnected");
+      });
+    return () => controller.abort();
+  }, [serverHttpUrl]);
+
+  // Join Lobby Handlers (Only connects when user explicitly clicks Play!)
   const handleJoinMultiplayer = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2") => {
     setDisplayName(name);
     setAvatarPresetId(avType);
@@ -284,33 +288,42 @@ export const MelaGame: React.FC = () => {
     setIsLobbyOpen(false);
 
     setConnectionState("connecting");
+    setRemotePlayers(new Map());
     networkManager.connect(name, newCustomization, currentServerId).then((connected) => {
       if (connected) {
         setIsOnline(true);
         setConnectionState("online");
         showToast(
-          `🎉 Swagatam ${name}! Connected to ${
+          `Swagatam ${name}! Connected to ${
             currentServerId === "melaverse-server-2"
-              ? "🏔️ Server 2: Pokhara Chautari"
-              : "🇳🇵 Server 1: Kathmandu Mela"
+              ? "Pokhara Chautari (Server 2)"
+              : "Kathmandu Mela (Server 1)"
           }! 🌐`
         );
       } else {
         setIsOnline(false);
         setConnectionState("disconnected");
-        showToast("Connected in Standalone 3D Mode! (Offline fallback)");
+        showToast("Playing in Standalone 3D Mode! (Server offline)");
       }
     });
   };
 
   const handlePlaySolo = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2") => {
+    networkManager.disconnect();
     setDisplayName(name);
     setAvatarPresetId(avType);
     const preset = AVATAR_PRESETS.find((p) => p.id === avType) ?? AVATAR_PRESETS[0];
     setCustomization({ ...preset.customization });
     setIsLobbyOpen(false);
     setIsOnline(false);
-    showToast(`🎮 Swagatam ${name}! Exploring Chatparva Mela in Standalone 3D Mode!`);
+    showToast(`Swagatam ${name}! Exploring Chatparva Mela in Standalone Mode! 🎮`);
+  };
+
+  const handleExitGame = () => {
+    networkManager.disconnect();
+    setIsOnline(false);
+    setIsLobbyOpen(true);
+    showToast("Returned to Main Menu! 🙏");
   };
 
   // Setup Network Manager Callbacks
@@ -333,7 +346,9 @@ export const MelaGame: React.FC = () => {
 
     networkManager.onChatMessage = (msg) => {
       setChatMessages((prev) => [...prev.slice(-30), msg]);
-      soundManager.playMadalBeat("high");
+      if (msg.senderId !== "system") {
+        soundManager.playMadalBeat("high");
+      }
     };
 
     networkManager.onSwingUpdated = (swing) => {
@@ -341,9 +356,6 @@ export const MelaGame: React.FC = () => {
       const isMe = swing.occupantId === networkManager.getSessionId();
       setIsSeatedOnSwing(isMe);
       setSwingOccupantName(swing.occupantName || null);
-      if (Math.abs(swing.angle) > 0.3) {
-        soundManager.playSwingCreak();
-      }
     };
 
     networkManager.onDiyaUpdated = (diya) => {
@@ -352,21 +364,13 @@ export const MelaGame: React.FC = () => {
         next.set(diya.id, { isLit: diya.isLit, litBy: diya.litBy });
         return next;
       });
-      if (diya.isLit) {
-        soundManager.playDiyaLight();
-      }
     };
 
     networkManager.onLangurUpdated = (data) => {
       setLangurPhase(data.phase);
       setLangurTimer(data.timer);
       setLangurDice(data.dice);
-
-      if (data.phase === "rolling") {
-        soundManager.playDiceRoll();
-      } else if (data.phase === "payout") {
-        soundManager.playWinFanfare();
-      } else if (data.phase === "betting") {
+      if (data.phase === "betting") {
         setMyBets(new Map());
       }
     };
@@ -1367,6 +1371,7 @@ export const MelaGame: React.FC = () => {
           onTriggerEmote={handleTriggerEmote}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenControls={() => setIsControlsOpen(true)}
+          onExit={handleExitGame}
           onToggleMusic={handleToggleMusic}
           isMusicPlaying={isMusicPlaying}
           nearbyInteraction={nearbyInteraction}
@@ -1405,6 +1410,7 @@ export const MelaGame: React.FC = () => {
         onPlaySolo={handlePlaySolo}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenControls={() => setIsControlsOpen(true)}
+        onExit={handleExitGame}
         serverStatus={connectionState === "online" ? "online" : connectionState === "connecting" ? "connecting" : "offline"}
         ping={ping}
         serverName={currentServerId === "melaverse-server-2" ? "🏔️ Server 2: Pokhara Chautari" : "🇳🇵 Server 1: Kathmandu Mela"}

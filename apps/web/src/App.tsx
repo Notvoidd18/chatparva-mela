@@ -73,7 +73,7 @@ export default function App() {
     if (fetchState.phase === "success") {
       const enterTimer = window.setTimeout(() => {
         setActiveView("game");
-      }, 1200);
+      }, 300);
       return () => clearTimeout(enterTimer);
     }
   }, [fetchState.phase]);

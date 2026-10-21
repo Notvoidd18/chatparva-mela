@@ -20,6 +20,7 @@ interface GameHUDProps {
   onTriggerEmote: (emote: EmoteType) => void;
   onOpenSettings: () => void;
   onOpenControls?: () => void;
+  onExit?: () => void;
   onToggleMusic: () => boolean;
   isMusicPlaying: boolean;
   nearbyInteraction: string | null;
@@ -62,6 +63,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   onTriggerEmote,
   onOpenSettings,
   onOpenControls,
+  onExit,
   onToggleMusic,
   isMusicPlaying,
   nearbyInteraction,
@@ -379,6 +381,31 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           >
             ⚙️
           </button>
+
+          {/* Exit / Return to Main Menu */}
+          {onExit && (
+            <button
+              onClick={onExit}
+              style={{
+                backgroundColor: "rgba(185, 28, 28, 0.85)",
+                color: "#fecaca",
+                border: "1px solid #ef4444",
+                borderRadius: "12px",
+                padding: "8px 14px",
+                fontSize: "12px",
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 4px 12px rgba(220, 38, 38, 0.35)",
+              }}
+              aria-label="Exit Game"
+              title="Leave Mela and return to Main Menu"
+            >
+              🚪 Exit
+            </button>
+          )}
         </div>
       </header>
 

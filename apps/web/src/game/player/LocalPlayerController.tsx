@@ -542,7 +542,6 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
     if (isJumpPressed && isGroundedRef.current) {
       velocityYRef.current = 8.5;
       isGroundedRef.current = false;
-      soundManager.playMadalBeat("high");
     }
 
     // Apply gravity
