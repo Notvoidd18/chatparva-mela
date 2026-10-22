@@ -68,12 +68,12 @@ export default function App() {
     };
   }, [serverHttpUrl]);
 
-  // Seamlessly transition to 3D game once server verification succeeds
+  // Seamlessly transition to 3D game once server verification finishes (success or offline fallback)
   useEffect(() => {
-    if (fetchState.phase === "success") {
+    if (fetchState.phase === "success" || fetchState.phase === "error") {
       const enterTimer = window.setTimeout(() => {
         setActiveView("game");
-      }, 300);
+      }, 150);
       return () => clearTimeout(enterTimer);
     }
   }, [fetchState.phase]);

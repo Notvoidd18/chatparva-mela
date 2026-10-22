@@ -1,6 +1,6 @@
 {
   "name": "@melaverse/web",
-  "version": "0.1.0",
+  "version": "0.2.3",
   "description": "MelaVerse Nepal — React + Three.js web client",
   "type": "module",
   "scripts": {

@@ -15,6 +15,7 @@ interface LocalPlayerControllerProps {
   onNearbyInteractionChange?: (nearby: string | null) => void;
   virtualJoystick?: { x: number; y: number } | null;
   virtualJump?: boolean;
+  cameraRotateStep?: number;
   isLockedInAttraction?: boolean;
   isSeatedOnSwing?: boolean;
   swingAngle?: number;
@@ -137,6 +138,7 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
   onNearbyInteractionChange,
   virtualJoystick,
   virtualJump,
+  cameraRotateStep = 0,
   isLockedInAttraction = false,
   isSeatedOnSwing = false,
   swingAngle = 0,
@@ -214,6 +216,32 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
       cameraAngleRef.current.distance = Math.max(0.8, Math.min(16, cameraAngleRef.current.distance + e.deltaY * 0.008));
     };
 
+    // Mobile touch look / pan controls
+    const handleTouchStart = (e: TouchEvent) => {
+      soundManager.ensureAudio();
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        // Only drag camera if touch is on the right 65% of the screen (away from joystick area)
+        if (touch.clientX > window.innerWidth * 0.35) {
+          isDraggingRef.current = true;
+          lastMousePosRef.current = { x: touch.clientX, y: touch.clientY };
+        }
+      }
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDraggingRef.current || e.touches.length === 0) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - lastMousePosRef.current.x;
+      const dy = touch.clientY - lastMousePosRef.current.y;
+      lastMousePosRef.current = { x: touch.clientX, y: touch.clientY };
+
+      cameraAngleRef.current.theta -= dx * 0.008;
+      cameraAngleRef.current.phi = Math.max(0.08, Math.min(1.2, cameraAngleRef.current.phi + dy * 0.006));
+    };
+    const handleTouchEnd = () => {
+      isDraggingRef.current = false;
+    };
+
     const handleBlur = () => {
       keysRef.current = {};
       isDraggingRef.current = false;
@@ -227,6 +255,9 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("wheel", handleWheel, { passive: true });
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener("blur", handleBlur);
@@ -236,12 +267,20 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
       canvas.removeEventListener("wheel", handleWheel);
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [gl]);
 
   // Main game tick loop
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.08);
+
+    // Continuous smooth camera rotation from mobile rotate buttons (Roblox style)
+    if (cameraRotateStep !== 0) {
+      cameraAngleRef.current.theta += cameraRotateStep * dt * 2.4;
+    }
 
     // If in Start Lobby, provide a cinematic overview orbit of the festive map
     if (isLobby) {

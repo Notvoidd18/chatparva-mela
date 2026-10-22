@@ -7,7 +7,18 @@ class SoundEngine {
   public isMuted: boolean = false;
   public isMusicMuted: boolean = false;
   public volume: number = 0.5;
+  public musicVolume: number = 0.5;
   private lastPlayed = new Map<string, number>();
+
+  public setVolume(vol: number) {
+    this.volume = Math.max(0, Math.min(1, vol));
+    this.isMuted = this.volume === 0;
+  }
+
+  public setMusicVolume(vol: number) {
+    this.musicVolume = Math.max(0, Math.min(1, vol));
+    this.isMusicMuted = this.musicVolume === 0;
+  }
 
   public canPlay(id: string, cooldownMs: number): boolean {
     const now = performance.now();

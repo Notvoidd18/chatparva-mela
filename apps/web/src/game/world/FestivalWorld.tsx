@@ -249,34 +249,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         }
       }
     }
-    if (dancersRef.current) {
-      dancersRef.current.children.forEach((dancer, idx) => {
-        if (idx === 0) {
-          // 1. Maruni Dance (मारुनी): Graceful wrist wave & hip sway
-          dancer.rotation.y = Math.sin(t * 2.2) * 0.45;
-          dancer.position.y = Math.abs(Math.sin(t * 4.4)) * 0.14;
-          dancer.rotation.z = Math.sin(t * 2.2) * 0.08;
-        } else if (idx === 1) {
-          // 2. Deusi-Bhailo Cultural Dance (देउसी-भैलो): Rhythmic double clap & step
-          dancer.position.y = Math.abs(Math.sin(t * 5.0)) * 0.16;
-          dancer.rotation.y = Math.sin(t * 1.5) * 0.28;
-          dancer.rotation.x = Math.max(0, Math.sin(t * 5.0)) * 0.06;
-        } else if (idx === 2) {
-          // 3. Kauda / Tamang Selo Dance (कौडा / सेलो): Energetic hop & shoulder shake
-          dancer.position.y = Math.max(0, Math.sin(t * 5.5)) * 0.24;
-          dancer.rotation.z = Math.sin(t * 5.5) * 0.12;
-          dancer.rotation.y = Math.cos(t * 2.0) * 0.35;
-        } else if (idx === 3) {
-          // 4. Jhaure / Teej Twirl Spin (झ्याउरे नाच): Continuous elegant spin
-          dancer.rotation.y = t * 2.4;
-          dancer.position.y = Math.abs(Math.sin(t * 4.8)) * 0.10;
-        } else {
-          // 5. Chutki Rhythm Dance (चुटकी नाच): Snappy side-to-side steps
-          dancer.position.y = Math.abs(Math.sin(t * 3.8)) * 0.12;
-          dancer.rotation.y = -0.3 + Math.sin(t * 3.8) * 0.35;
-        }
-      });
-    }
+
     if (diceCupRef.current) {
       if (langurPhase === "rolling") {
         diceCupRef.current.position.y = 1.35 + Math.abs(Math.sin(t * 22)) * 0.18;
@@ -855,21 +828,19 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           </Html>
         )}
 
-        {taasPlayerCount >= 2 && (
-          <group position={[-1.8, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-            <CharacterAvatar displayName="Bishnu Dai" animState="seated" showCardsInHand={true} customization={{ color: "#C41E3A", vestColor: "#D97706" }} />
-          </group>
-        )}
-        {taasPlayerCount >= 3 && (
-          <group position={[0, 0, -1.8]} rotation={[0, 0, 0]}>
-            <CharacterAvatar displayName="Sunita Didi" animState="seated" showCardsInHand={true} customization={{ color: "#0D9488", hasDhakaTopi: false }} />
-          </group>
-        )}
-        {taasPlayerCount >= 4 && (
-          <group position={[1.8, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-            <CharacterAvatar displayName="Kiran Bhai" animState="seated" showCardsInHand={true} customization={{ color: "#2563EB", vestColor: "#B45309" }} />
-          </group>
-        )}
+        {/* 4 Seating Cushions for Real Players */}
+        {[-1.8, 1.8].map((x, idx) => (
+          <mesh key={`taas-cushion-x-${idx}`} position={[x, 0.05, 0]}>
+            <cylinderGeometry args={[0.45, 0.45, 0.1, 16]} />
+            <meshStandardMaterial color={idx === 0 ? "#991B1B" : "#B45309"} roughness={0.8} />
+          </mesh>
+        ))}
+        {[-1.8, 1.8].map((z, idx) => (
+          <mesh key={`taas-cushion-z-${idx}`} position={[0, 0.05, z]}>
+            <cylinderGeometry args={[0.45, 0.45, 0.1, 16]} />
+            <meshStandardMaterial color={idx === 0 ? "#15803D" : "#1E3A8A"} roughness={0.8} />
+          </mesh>
+        ))}
       </group>
 
       {/* ─── 6. Aama Samuha Cultural Gathering Stage (Phase 9A) ───────────── */}
@@ -952,64 +923,45 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           </Html>
         )}
 
-        {/* 5 Dancing Women NPCs in Traditional Nepali Attire with Diverse Real Choreographies */}
-        <group ref={dancersRef} position={[0, 0.8, 0]}>
-          {/* 1. Radhika Didi - Maruni Dance */}
-          <group position={[-3.0, 0, 0.5]}>
-            <CharacterAvatar
-              displayName="Radhika Didi (मारुनी)"
-              animState="nach"
-              customization={{ color: "#DC2626", vestColor: "#EAB308", hasDhakaTopi: false, skinTone: "#D49B6A" }}
-            />
+        {/* Traditional Nepali Instruments on Stage (Madal Drums & Harmonium) */}
+        <group position={[0, 0.8, 0]}>
+          {/* Madal 1 on Wooden Stand (Left) */}
+          <group position={[-2.8, 0.35, -0.5]} rotation={[0, 0.3, Math.PI / 2]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.22, 0.28, 0.85, 16]} />
+              <meshStandardMaterial color="#451A03" roughness={0.7} />
+            </mesh>
+            <mesh position={[0, 0.43, 0]}>
+              <cylinderGeometry args={[0.18, 0.18, 0.04, 16]} />
+              <meshStandardMaterial color="#FBBF24" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.43, 0]}>
+              <cylinderGeometry args={[0.22, 0.22, 0.04, 16]} />
+              <meshStandardMaterial color="#FBBF24" roughness={0.8} />
+            </mesh>
           </group>
-          {/* 2. Parvati Aama - Deusi-Bhailo Dance */}
-          <group position={[-1.5, 0, -1.0]}>
-            <CharacterAvatar
-              displayName="Parvati Aama (देउसी)"
-              animState="clapping_dance"
-              customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false, skinTone: "#E0AC69" }}
-            />
-          </group>
-          {/* 3. Sita Didi - Kauda / Tamang Selo Dance */}
-          <group position={[0, 0, 0.8]}>
-            <CharacterAvatar
-              displayName="Sita Didi (कौडा/सेलो)"
-              animState="swaying_dance"
-              customization={{ color: "#DC2626", vestColor: "#EAB308", hasDhakaTopi: false, skinTone: "#D49B6A" }}
-            />
-          </group>
-          {/* 4. Maya Bahini - Jhaure Twirling Dance */}
-          <group position={[1.5, 0, -1.0]}>
-            <CharacterAvatar
-              displayName="Maya Bahini (झ्याउरे)"
-              animState="nach"
-              customization={{ color: "#0284C7", vestColor: "#F59E0B", hasDhakaTopi: false, skinTone: "#E0AC69" }}
-            />
-          </group>
-          {/* 5. Kalyani Bajai - Chutki Rhythm Dance */}
-          <group position={[3.0, 0, 0.5]}>
-            <CharacterAvatar
-              displayName="Kalyani Bajai (चुटकी)"
-              animState="clapping_dance"
-              customization={{ color: "#9333EA", vestColor: "#FBBF24", hasDhakaTopi: false, skinTone: "#D49B6A" }}
-            />
-          </group>
-        </group>
 
-        {/* 2 Madal Drummers on the side */}
-        <group position={[-4.2, 0.8, -2]} rotation={[0, 0.4, 0]}>
-          <CharacterAvatar
-            displayName="Madal Dai"
-            animState="idle"
-            customization={{ color: "#451A03", vestColor: "#D97706", hasDhakaTopi: true }}
-          />
-        </group>
-        <group position={[4.2, 0.8, -2]} rotation={[0, -0.4, 0]}>
-          <CharacterAvatar
-            displayName="Kaji Bhai"
-            animState="idle"
-            customization={{ color: "#1E3A8A", vestColor: "#B45309", hasDhakaTopi: true }}
-          />
+          {/* Madal 2 on Wooden Stand (Right) */}
+          <group position={[2.8, 0.35, -0.5]} rotation={[0, -0.3, -Math.PI / 2]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.22, 0.28, 0.85, 16]} />
+              <meshStandardMaterial color="#451A03" roughness={0.7} />
+            </mesh>
+            <mesh position={[0, 0.43, 0]}>
+              <cylinderGeometry args={[0.18, 0.18, 0.04, 16]} />
+              <meshStandardMaterial color="#FBBF24" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.43, 0]}>
+              <cylinderGeometry args={[0.22, 0.22, 0.04, 16]} />
+              <meshStandardMaterial color="#FBBF24" roughness={0.8} />
+            </mesh>
+          </group>
+
+          {/* Center Stage Performance Area for Real Players */}
+          <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[2.2, 24]} />
+            <meshStandardMaterial color="#991B1B" roughness={0.75} />
+          </mesh>
         </group>
 
         {/* Stage Marigold Garlands & Ghili-Mili Fairy Lights */}
@@ -1046,35 +998,15 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             <meshStandardMaterial color="#CA8A04" roughness={0.8} />
           </mesh>
 
-          {/* 4 Seated Village Elders across Front and Sides */}
-          <group position={[-4.5, 0.05, -0.8]} rotation={[0, Math.PI, 0]}>
-            <CharacterAvatar
-              displayName="Laxmi Aama"
-              animState="seated_clapping"
-              customization={{ color: "#991B1B", vestColor: "#EAB308", hasDhakaTopi: false, skinTone: "#D49B6A" }}
-            />
-          </group>
-          <group position={[-2.2, 0.05, 1.2]} rotation={[0, Math.PI, 0]}>
-            <CharacterAvatar
-              displayName="Devaki Bajai"
-              animState="seated_clapping"
-              customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false, skinTone: "#E0AC69" }}
-            />
-          </group>
-          <group position={[2.2, 0.05, 1.2]} rotation={[0, Math.PI, 0]}>
-            <CharacterAvatar
-              displayName="Nirmala Didi"
-              animState="seated_clapping"
-              customization={{ color: "#D97706", vestColor: "#B45309", hasDhakaTopi: false, skinTone: "#D49B6A" }}
-            />
-          </group>
-          <group position={[4.5, 0.05, -0.8]} rotation={[0, Math.PI, 0]}>
-            <CharacterAvatar
-              displayName="Gita Bajai"
-              animState="seated_clapping"
-              customization={{ color: "#0284C7", vestColor: "#EA580C", hasDhakaTopi: false, skinTone: "#E0AC69" }}
-            />
-          </group>
+          {/* Traditional Straw & Velvet Seating Mats (गुन्द्री चकटीहरू) for Real Players */}
+          {[-4.5, -2.2, 2.2, 4.5].map((x, idx) => (
+            <group key={`gundri-seat-${idx}`} position={[x, 0.05, idx % 2 === 0 ? -0.8 : 1.2]}>
+              <mesh>
+                <cylinderGeometry args={[0.55, 0.55, 0.08, 16]} />
+                <meshStandardMaterial color={["#991B1B", "#15803D", "#D97706", "#1E3A8A"][idx]} roughness={0.8} />
+              </mesh>
+            </group>
+          ))}
 
           {/* Festive Tea & Puja Brass Plates on the Ground */}
           <mesh position={[-1.0, 0.06, 0]}>
@@ -1110,26 +1042,12 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           )}
         </group>
 
-        {/* Left Side Courtyard Bench with 2 Seated Elders */}
+        {/* Left Side Courtyard Bench for Real Players */}
         <group position={[-5.0, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
           <mesh position={[0, 0.4, 0]} castShadow>
             <boxGeometry args={[3.4, 0.12, 0.6]} />
             <meshStandardMaterial color="#6B4226" roughness={0.8} />
           </mesh>
-          <group position={[-0.9, 0.45, 0]}>
-            <CharacterAvatar
-              displayName="Devaki Aama"
-              animState="seated_clapping"
-              customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false }}
-            />
-          </group>
-          <group position={[0.9, 0.45, 0]}>
-            <CharacterAvatar
-              displayName="Gita Bajai"
-              animState="seated"
-              customization={{ color: "#0284C7", vestColor: "#EA580C", hasDhakaTopi: false }}
-            />
-          </group>
         </group>
       </group>
 

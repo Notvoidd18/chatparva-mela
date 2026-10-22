@@ -110,6 +110,30 @@ export const SansthaModal: React.FC<SansthaModalProps> = ({
           </button>
         </div>
 
+        {/* Proximity Voice Chat Feature Announcement */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%)",
+            border: "1.5px solid #22D3EE",
+            borderRadius: "14px",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            boxShadow: "0 4px 15px rgba(6, 182, 212, 0.2)",
+          }}
+        >
+          <span style={{ fontSize: "28px" }}>🎙️</span>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: "13px", color: "#67E8F9" }}>
+              Upcoming Feature: Proximity Voice Chat (स्थानिक आवाज कुराकानी)
+            </div>
+            <div style={{ fontSize: "11px", color: "#E2E8F0", marginTop: "2px", lineHeight: "1.4" }}>
+              Talk naturally with Yatris nearby in 3D spatial sound. Sing together with Aama Samuha, whisper in the Mandir, or cheer during Langur Burja!
+            </div>
+          </div>
+        </div>
+
         {/* Tab Navigation */}
         <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #334155", paddingBottom: "10px" }}>
           <button
@@ -196,6 +220,7 @@ export const SansthaModal: React.FC<SansthaModalProps> = ({
                 🚀 Upcoming Roadmap (चाँडै आउँदैछ)
               </div>
               <ul style={{ margin: "6px 0 0 16px", padding: 0, fontSize: "12px", color: "#FEF08A", lineHeight: "1.6" }}>
+                <li>🎙️ <strong>स्थानिक आवाज कुराकानी (Proximity Voice Chat)</strong>: Real-time 3D spatial voice</li>
                 <li>बाघचाल (Bagh-Chal) Real-time Multiplayer minigame</li>
                 <li>खुल्ला आकाशमा चङ्गा चेट प्रतिस्पर्धा (Kite Dogfight)</li>
                 <li>तिहार देउसी-भैलो समूह गायन र मादल बादन</li>

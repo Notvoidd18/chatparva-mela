@@ -5,7 +5,7 @@ import http from "node:http";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import { Server, createNodeMatchmakingMiddleware } from "@colyseus/core";
+import { Server, createNodeMatchmakingMiddleware, matchMaker } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { MelaWorldRoom } from "./rooms/MelaWorldRoom.js";
 import { ROOM_NAMES } from "@melaverse/shared";
@@ -33,13 +33,27 @@ app.use(createNodeMatchmakingMiddleware());
 app.use(express.json());
 
 // ─── Health Endpoint ──────────────────────────────────────────────────────────
-app.get("/health", (_req, res) => {
+app.get("/health", async (_req, res) => {
+  let server1Clients = 0;
+  let server2Clients = 0;
+  try {
+    const rooms = await matchMaker.query({});
+    rooms.forEach((r: any) => {
+      if (r.name === ROOM_NAMES.SERVER_1) server1Clients = r.clients;
+      if (r.name === ROOM_NAMES.SERVER_2) server2Clients = r.clients;
+    });
+  } catch {}
+
   res.json({
     status: "ok",
-    version: "0.2.0",
+    version: "0.2.3",
     timestamp: new Date().toISOString(),
     room_count: 2,
     rooms: [ROOM_NAMES.SERVER_1, ROOM_NAMES.SERVER_2],
+    servers: {
+      "melaverse-server-1": { name: "Kathmandu Mela", clients: server1Clients, maxClients: 30 },
+      "melaverse-server-2": { name: "Pokhara Chautari", clients: server2Clients, maxClients: 30 },
+    },
   });
 });
 

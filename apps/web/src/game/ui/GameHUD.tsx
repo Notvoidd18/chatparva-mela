@@ -30,6 +30,7 @@ interface GameHUDProps {
   showMobileControls: boolean;
   onJoystickMove?: (vec: { x: number; y: number } | null) => void;
   onJumpTouch?: (jump: boolean) => void;
+  onRotateCamera?: (step: number) => void;
   heldItem?: "chiya" | "sel_roti" | "kite" | "diya" | null;
   selectedHotbarSlot: number;
   onSelectHotbarSlot: (slot: number) => void;
@@ -51,7 +52,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   onOpenNameModal,
   npr,
   tokens = 0,
-  score,
   ping,
   isOnline,
   connectionState,
@@ -69,10 +69,10 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   nearbyInteraction,
   onInteract,
   customization,
-  onUpdateCustomization,
   showMobileControls,
   onJoystickMove,
   onJumpTouch,
+  onRotateCamera,
   heldItem,
   selectedHotbarSlot,
   onSelectHotbarSlot,
@@ -81,7 +81,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   selRotiCount,
   hasChanga,
   isKiteFlying,
-  timeOfDayPhase = "day",
   canJoinDance = false,
   onJoinDance,
   isDancing = false,
@@ -89,197 +88,133 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   onSwitchServer,
 }) => {
   const [chatInput, setChatInput] = useState("");
-  const [chatChannel, setChatChannel] = useState<"global" | "proximity">("global");
-  const [isChatExpanded, setIsChatExpanded] = useState(false);
-  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
-  const [fps, setFps] = useState<number>(60);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [joystickActive, setJoystickActive] = useState(false);
+  const [joystickPos, setJoystickPos] = useState({ x: 0, y: 0 });
 
-  // Smooth realtime FPS counter
-  useEffect(() => {
-    let frameCount = 0;
-    let lastTime = performance.now();
-    let animId: number;
+  // Handle Joystick Touch
+  const handleJoystickStart = (e: React.TouchEvent | React.PointerEvent) => {
+    setJoystickActive(true);
+    handleJoystickMove(e);
+  };
 
-    const loop = () => {
-      frameCount++;
-      const now = performance.now();
-      if (now - lastTime >= 500) {
-        setFps(Math.round((frameCount * 1000) / (now - lastTime)));
-        frameCount = 0;
-        lastTime = now;
-      }
-      animId = requestAnimationFrame(loop);
-    };
-    animId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(animId);
-  }, []);
+  const handleJoystickMove = (e: React.TouchEvent | React.PointerEvent) => {
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+    const baseEl = document.getElementById("virtual-joystick-base");
+    if (!baseEl) return;
+    const rect = baseEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
+    const maxRadius = 40;
+    const dist = Math.hypot(dx, dy);
+    const clampedDist = Math.min(dist, maxRadius);
+    const angle = Math.atan2(dy, dx);
+
+    const stickX = Math.cos(angle) * clampedDist;
+    const stickY = Math.sin(angle) * clampedDist;
+
+    setJoystickPos({ x: stickX, y: stickY });
+    onJoystickMove?.({ x: stickX / maxRadius, y: stickY / maxRadius });
+  };
+
+  const handleJoystickEnd = () => {
+    setJoystickActive(false);
+    setJoystickPos({ x: 0, y: 0 });
+    onJoystickMove?.(null);
+  };
 
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    onSendChat(chatInput.trim(), chatChannel);
+    onSendChat(chatInput.trim(), "global");
     setChatInput("");
   };
 
-  const getTimePhaseBadge = (phase: string) => {
-    switch (phase) {
-      case "morning":
-        return { icon: "🌅", label: "बिहानी (Morning)" };
-      case "day":
-        return { icon: "☀️", label: "दिउँसो (Daytime)" };
-      case "sunset":
-        return { icon: "🌇", label: "साँझ (Sunset)" };
-      case "night":
-        return { icon: "🌙", label: "राती (Tihar Night)" };
-      default:
-        return { icon: "☀️", label: "Mela" };
-    }
-  };
-
-  const timeBadge = getTimePhaseBadge(timeOfDayPhase);
-
   return (
-    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 100 }}>
-      {/* ─── Top Header Bar ─────────────────────────────────────────────────── */}
-      <header
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        pointerEvents: "none",
+        zIndex: 100,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      {/* ─── Ultra-Clean Modern Top Bar ────────────────────────────────────────── */}
+      <div
         style={{
           position: "absolute",
-          top: 12,
+          top: 10,
           left: 12,
           right: 12,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           pointerEvents: "auto",
-          flexWrap: "wrap",
-          gap: "8px",
         }}
       >
-        {/* Festival Branding & Player Info */}
-        <div
-          style={{
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(245, 158, 11, 0.5)",
-            borderRadius: "14px",
-            padding: "8px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "15px", fontWeight: 900, color: "#fbbf24", letterSpacing: "0.5px" }}>
-              🎪 Chatparva Mela
-            </div>
-            <div style={{ fontSize: "11px", color: "#94a3b8" }}>Dashain &amp; Tihar Festival</div>
-          </div>
-
-          <div style={{ width: "1px", height: "24px", backgroundColor: "#334155" }} />
-
-          {/* NPR Currency & Score */}
-          <div style={{ display: "flex", gap: "10px", fontSize: "12px", fontWeight: 700, alignItems: "center" }}>
-            <span style={{ color: "#fde047" }}>💰 रू {npr.toLocaleString()} NPR</span>
-            <span style={{ color: "#38bdf8" }}>⭐ {score} Pts</span>
-            <span style={{ backgroundColor: "rgba(30, 41, 59, 0.8)", border: "1px solid #475569", color: "#fef08a", padding: "2px 8px", borderRadius: "8px", fontSize: "11px" }}>
-              {timeBadge.icon} {timeBadge.label}
-            </span>
-            <span
-              style={{
-                backgroundColor: "rgba(15, 23, 42, 0.85)",
-                border: `1px solid ${fps >= 50 ? "#22c55e" : fps >= 30 ? "#eab308" : "#ef4444"}`,
-                color: fps >= 50 ? "#4ade80" : fps >= 30 ? "#fde047" : "#f87171",
-                padding: "2px 8px",
-                borderRadius: "8px",
-                fontSize: "11px",
-                fontWeight: 800,
-              }}
-            >
-              ⚡ {fps} FPS
-            </span>
-            {customization.hasTika && (
-              <span style={{ backgroundColor: "#831843", color: "#fbcfe8", padding: "2px 7px", borderRadius: "8px", fontSize: "10px", fontWeight: 800 }}>
-                🌸 Tika Blessed
-              </span>
-            )}
-            {heldItem && (
-              <span style={{ backgroundColor: "#334155", padding: "2px 6px", borderRadius: "8px", fontSize: "11px" }}>
-                {heldItem === "chiya" && "☕ Hot Chiya Active (+Speed)"}
-                {heldItem === "sel_roti" && "🍩 Eating Sel Roti"}
-                {heldItem === "kite" && "🪁 Flying Changa"}
-                {heldItem === "diya" && "🪔 Tihar Diya Glowing"}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Top Right Controls: Inventory, Music, Connection, Settings */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          {/* Inventory Button */}
-          <button
-            onClick={onOpenInventory}
+        {/* Left: Currency & Connection Pill */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* NPR Currency Pill */}
+          <div
             style={{
-              backgroundColor: "rgba(180, 83, 9, 0.9)",
-              color: "#FFF",
-              border: "1px solid #facc15",
-              borderRadius: "12px",
-              padding: "8px 14px",
-              fontSize: "12px",
-              fontWeight: 800,
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              background: "rgba(18, 18, 24, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(250, 204, 21, 0.4)",
+              borderRadius: "20px",
+              padding: "5px 12px",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
             }}
           >
-            <span>🎒</span>
-            <span>Inventory [I]</span>
-          </button>
+            <span style={{ fontSize: "14px" }}>🇳🇵</span>
+            <span style={{ fontWeight: 900, color: "#FEF08A", fontSize: "13px" }}>
+              रू {npr}
+            </span>
+          </div>
 
-          {/* Music Toggle */}
-          <button
-            onClick={onToggleMusic}
+          {/* Festival Tokens Pill */}
+          <div
             style={{
-              backgroundColor: isMusicPlaying ? "rgba(180, 83, 9, 0.85)" : "rgba(51, 65, 85, 0.85)",
-              color: "#FFF",
-              border: isMusicPlaying ? "1px solid #fde047" : "1px solid #64748b",
-              borderRadius: "12px",
-              padding: "8px 12px",
-              fontSize: "12px",
-              fontWeight: 800,
-              cursor: "pointer",
+              background: "rgba(18, 18, 24, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              borderRadius: "20px",
+              padding: "5px 12px",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
             }}
           >
-            <span>{isMusicPlaying ? "🎵" : "🔇"}</span>
-            <span>{isMusicPlaying ? "Music (Playing)" : "Music (Off)"}</span>
-          </button>
+            <span style={{ fontSize: "14px" }}>🪙</span>
+            <span style={{ fontWeight: 900, color: "#FDE047", fontSize: "13px" }}>
+              {tokens}
+            </span>
+          </div>
 
-          {/* Online Connection Badge */}
+          {/* Connection Dot Badge */}
           <button
             onClick={onToggleOnline}
             style={{
-              backgroundColor:
-                connectionState === "online"
-                  ? "rgba(5, 150, 105, 0.9)"
-                  : connectionState === "connecting" || connectionState === "reconnecting"
-                  ? "rgba(180, 83, 9, 0.9)"
-                  : "rgba(185, 28, 28, 0.9)",
-              color: "#FFF",
-              border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: "12px",
-              padding: "8px 14px",
-              fontSize: "12px",
-              fontWeight: 800,
-              cursor: "pointer",
+              background: "rgba(18, 18, 24, 0.85)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              borderRadius: "20px",
+              padding: "5px 10px",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              cursor: "pointer",
             }}
+            title="Server Connection Status"
           >
             <span
               style={{
@@ -288,163 +223,359 @@ export const GameHUD: React.FC<GameHUDProps> = ({
                 borderRadius: "50%",
                 backgroundColor:
                   connectionState === "online"
-                    ? "#4ade80"
-                    : connectionState === "connecting" || connectionState === "reconnecting"
-                    ? "#facc15"
+                    ? "#22c55e"
+                    : connectionState === "connecting"
+                    ? "#eab308"
                     : "#ef4444",
+                boxShadow: connectionState === "online" ? "0 0 8px #22c55e" : "none",
               }}
             />
-            <span>
-              {connectionState === "online" && `Online (${playerCount} Players • ${ping}ms)`}
-              {connectionState === "connecting" && "Connecting to Server..."}
-              {connectionState === "reconnecting" && "Reconnecting..."}
-              {connectionState === "disconnected" && "Offline (Click to Connect)"}
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#E2E8F0" }}>
+              {connectionState === "online" ? `${ping}ms` : "Offline"}
             </span>
           </button>
+        </div>
 
-          {/* Server 1 / Server 2 Room Switcher */}
-          <select
-            value={currentServerId}
-            onChange={(e) => onSwitchServer?.(e.target.value)}
-            title="Switch Multiplayer Server"
-            style={{
-              backgroundColor: "rgba(15, 23, 42, 0.92)",
-              color: "#FDE047",
-              border: "1.5px solid #F59E0B",
-              borderRadius: "12px",
-              padding: "7px 10px",
-              fontSize: "11px",
-              fontWeight: 800,
-              cursor: "pointer",
-              outline: "none",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-            }}
-          >
-            <option value="melaverse-server-1">🇳🇵 Server 1: Kathmandu Mela</option>
-            <option value="melaverse-server-2">🏔️ Server 2: Pokhara Chautari</option>
-          </select>
-
-          {/* Player Name / Customizer */}
+        {/* Right: Profile, Audio & Dropdown Menu Button */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Profile Badge */}
           <button
             onClick={onOpenNameModal}
             style={{
-              backgroundColor: "rgba(15, 23, 42, 0.85)",
-              color: "#f8fafc",
-              border: "1px solid #475569",
-              borderRadius: "12px",
-              padding: "8px 12px",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            👤 {displayName}
-          </button>
-
-          {/* Controls */}
-          {onOpenControls && (
-            <button
-              onClick={onOpenControls}
-              style={{
-                backgroundColor: "rgba(15, 23, 42, 0.85)",
-                color: "#facc15",
-                border: "1px solid #475569",
-                borderRadius: "12px",
-                padding: "8px 12px",
-                fontSize: "13px",
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-              aria-label="Controls"
-              title="Controls & Shortcuts"
-            >
-              🎮 <span style={{ display: "none" }}>Controls</span>
-            </button>
-          )}
-
-          {/* Settings */}
-          <button
-            onClick={onOpenSettings}
-            style={{
-              backgroundColor: "rgba(15, 23, 42, 0.85)",
-              color: "#94a3b8",
-              border: "1px solid #475569",
-              borderRadius: "12px",
-              padding: "8px 12px",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
-            aria-label="Settings"
-          >
-            ⚙️
-          </button>
-
-          {/* Exit / Return to Main Menu */}
-          {onExit && (
-            <button
-              onClick={onExit}
-              style={{
-                backgroundColor: "rgba(185, 28, 28, 0.85)",
-                color: "#fecaca",
-                border: "1px solid #ef4444",
-                borderRadius: "12px",
-                padding: "8px 14px",
-                fontSize: "12px",
-                fontWeight: 800,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                boxShadow: "0 4px 12px rgba(220, 38, 38, 0.35)",
-              }}
-              aria-label="Exit Game"
-              title="Leave Mela and return to Main Menu"
-            >
-              🚪 Exit
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* ─── Group Dancing Prompt (नाचौं सबै मिलेर!) ───────────────────────── */}
-      {canJoinDance && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: showMobileControls ? 140 : 86,
-            left: "50%",
-            transform: "translateX(-50%)",
-            pointerEvents: "auto",
-            zIndex: 120,
-          }}
-        >
-          <button
-            onClick={onJoinDance}
-            style={{
-              backgroundColor: isDancing ? "rgba(220, 38, 38, 0.95)" : "rgba(234, 88, 12, 0.95)",
-              color: "#FFF",
-              border: "2px solid #FDE047",
-              borderRadius: "18px",
-              padding: "10px 22px",
-              fontSize: "13px",
-              fontWeight: 900,
-              cursor: "pointer",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
+              background: "rgba(18, 18, 24, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(250, 204, 21, 0.35)",
+              borderRadius: "20px",
+              padding: "4px 10px 4px 6px",
               display: "flex",
               alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            }}
+            title="Change name or avatar"
+          >
+            <div
+              style={{
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                backgroundColor: customization.color || "#C41E3A",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+              }}
+            >
+              👤
+            </div>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "#FFF" }}>
+              {displayName}
+            </span>
+          </button>
+
+          {/* Quick Sound/Music Toggle */}
+          <button
+            onClick={onToggleMusic}
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "rgba(18, 18, 24, 0.85)",
+              border: isMusicPlaying ? "1px solid #FCD34D" : "1px solid rgba(255,255,255,0.15)",
+              color: "#FFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+            title="Toggle Festival Music"
+          >
+            {isMusicPlaying ? "🎵" : "🔇"}
+          </button>
+
+          {/* Menu Button (Settings, Inventory, Exit) */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "rgba(18, 18, 24, 0.85)",
+                border: isMenuOpen ? "1.5px solid #38BDF8" : "1px solid rgba(255,255,255,0.15)",
+                color: "#FFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "16px",
+              }}
+              title="Game Menu"
+            >
+              ⚙️
+            </button>
+
+            {/* Dropdown Menu Modal */}
+            {isMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "44px",
+                  right: 0,
+                  width: "210px",
+                  background: "rgba(18, 18, 24, 0.96)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(250, 204, 21, 0.3)",
+                  borderRadius: "14px",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  boxShadow: "0 12px 30px rgba(0,0,0,0.8)",
+                  zIndex: 200,
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onOpenInventory();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "8px 10px",
+                    color: "#FFF",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span>🎒</span> Inventory Backpack [I]
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onOpenSettings();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "8px 10px",
+                    color: "#FFF",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span>⚙️</span> Audio &amp; Settings
+                </button>
+
+                {onOpenControls && (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenControls();
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "none",
+                      borderRadius: "8px",
+                      padding: "8px 10px",
+                      color: "#FFF",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span>📖</span> Controls Guide
+                  </button>
+                )}
+
+                {/* Server Switcher */}
+                <div style={{ padding: "4px 8px" }}>
+                  <div style={{ fontSize: "10px", color: "#94A3B8", fontWeight: 700, marginBottom: "4px" }}>
+                    SERVER:
+                  </div>
+                  <select
+                    value={currentServerId}
+                    onChange={(e) => {
+                      onSwitchServer?.(e.target.value);
+                      setIsMenuOpen(false);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "rgba(15, 23, 42, 0.9)",
+                      border: "1px solid #64748B",
+                      borderRadius: "6px",
+                      padding: "4px",
+                      color: "#FDE047",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    <option value="melaverse-server-1">🇳🇵 Server 1 (KTM)</option>
+                    <option value="melaverse-server-2">🏔️ Server 2 (PKR)</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onExit?.();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(220, 38, 38, 0.25)",
+                    border: "1px solid rgba(239, 68, 68, 0.5)",
+                    borderRadius: "8px",
+                    padding: "8px 10px",
+                    color: "#FCA5A5",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    marginTop: "4px",
+                  }}
+                >
+                  <span>🚪</span> Exit to Main Menu
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Bottom-Left: Collapsible Chat Bubble ──────────────────────────────── */}
+      <div style={{ position: "absolute", bottom: showMobileControls ? 140 : 20, left: 16, pointerEvents: "auto", zIndex: 110 }}>
+        {!isChatOpen ? (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: "rgba(18, 18, 24, 0.88)",
+              border: "1.5px solid #FCD34D",
+              color: "#FFF",
+              fontSize: "18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
+            }}
+            title="Open Chat"
+          >
+            💬
+          </button>
+        ) : (
+          <div
+            style={{
+              width: "290px",
+              background: "rgba(18, 18, 24, 0.94)",
+              backdropFilter: "blur(14px)",
+              border: "1px solid rgba(250, 204, 21, 0.4)",
+              borderRadius: "16px",
+              padding: "10px",
+              display: "flex",
+              flexDirection: "column",
               gap: "8px",
+              boxShadow: "0 10px 24px rgba(0,0,0,0.6)",
             }}
           >
-            <span>💃</span>
-            <span>{isDancing ? "Stop Dancing [G]" : "Join Nepali Group Dance [G] (नाचौं!)"}</span>
-          </button>
-        </div>
-      )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "12px", fontWeight: 800, color: "#FEF08A" }}>
+                💬 Festival Chat
+              </span>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#94A3B8",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 900,
+                }}
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* ─── Minecraft-Style Bottom Hotbar & Context Interaction Prompt (Phase 1 & 2) ─── */}
+            <div
+              style={{
+                maxHeight: "130px",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                fontSize: "11px",
+              }}
+            >
+              {chatMessages.slice(-10).map((msg) => (
+                <div key={msg.id} style={{ lineHeight: "1.3" }}>
+                  <span style={{ color: msg.isSystem ? "#F59E0B" : "#38BDF8", fontWeight: 700 }}>
+                    {msg.senderName}:{" "}
+                  </span>
+                  <span style={{ color: msg.isSystem ? "#FEF08A" : "#F8FAFC" }}>{msg.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleChatSubmit} style={{ display: "flex", gap: "6px" }}>
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Say Namaste... (Enter)"
+                maxLength={100}
+                style={{
+                  flex: 1,
+                  background: "rgba(15, 23, 42, 0.8)",
+                  border: "1px solid #475569",
+                  borderRadius: "8px",
+                  padding: "6px 8px",
+                  fontSize: "11px",
+                  color: "#FFF",
+                  outline: "none",
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: "#D97706",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "6px 10px",
+                  color: "#FFF",
+                  fontWeight: 800,
+                  fontSize: "11px",
+                  cursor: "pointer",
+                }}
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* ─── Bottom-Center: Minecraft Hotbar ───────────────────────────────────── */}
       <MinecraftHotbar
         selectedSlot={selectedHotbarSlot}
         onSelectSlot={onSelectHotbarSlot}
@@ -459,211 +590,168 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         onInteract={onInteract}
       />
 
-      {/* ─── Emote Action Wheel / Bar ────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: showMobileControls ? 80 : 20,
-          left: 12,
-          display: "flex",
-          gap: "6px",
-          pointerEvents: "auto",
-          backgroundColor: "rgba(15, 23, 42, 0.88)",
-          padding: "6px 8px",
-          borderRadius: "14px",
-          border: "1px solid rgba(245, 158, 11, 0.4)",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
-        }}
-      >
-        <button
-          onClick={() => onTriggerEmote("namaste")}
-          title="Namaste (नमस्ते)"
-          style={{
-            backgroundColor: "#292524",
-            color: "#FFF",
-            border: "none",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            fontSize: "11px",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
-        >
-          🙏 Namaste
-        </button>
-        <button
-          onClick={() => onTriggerEmote("nach")}
-          title="Nach (नाच)"
-          style={{
-            backgroundColor: "#292524",
-            color: "#FFF",
-            border: "none",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            fontSize: "11px",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
-        >
-          💃 Nach
-        </button>
-        <button
-          onClick={() => onTriggerEmote("clapping")}
-          title="Clap (ताली बजाउनुहोस्)"
-          style={{
-            backgroundColor: "#292524",
-            color: "#FFF",
-            border: "none",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            fontSize: "11px",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
-        >
-          👏 Clap
-        </button>
-        <button
-          onClick={() => onTriggerEmote("wave")}
-          title="Wave (हात हल्लाउनुहोस्)"
-          style={{
-            backgroundColor: "#292524",
-            color: "#FFF",
-            border: "none",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            fontSize: "11px",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
-        >
-          👋 Wave
-        </button>
-        <button
-          onClick={() => onTriggerEmote("cheer")}
-          title="Cheer (जय जयकार)"
-          style={{
-            backgroundColor: "#292524",
-            color: "#FFF",
-            border: "none",
-            borderRadius: "8px",
-            padding: "6px 10px",
-            fontSize: "11px",
-            fontWeight: 800,
-            cursor: "pointer",
-          }}
-        >
-          🎉 Cheer
-        </button>
-      </div>
-
-      {/* ─── Chat Panel ───────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: showMobileControls ? 80 : 20,
-          right: 12,
-          width: "320px",
-          pointerEvents: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "6px",
-        }}
-      >
-        {/* Toggle Chat Box */}
-        <div
-          style={{
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            borderRadius: "14px",
-            border: "1px solid rgba(245, 158, 11, 0.3)",
-            padding: "8px 12px",
-            maxHeight: isChatExpanded ? "220px" : "100px",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
-            fontSize: "11px",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-            <span style={{ fontWeight: 800, color: "#facc15" }}>💬 Festival Chat</span>
-            <button
-              onClick={() => setIsChatExpanded(!isChatExpanded)}
-              style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "11px" }}
-            >
-              {isChatExpanded ? "Collapse ▲" : "Expand ▼"}
-            </button>
+      {/* ─── Mobile Player Integration: Roblox-Style Controls ─────────────────── */}
+      {showMobileControls && (
+        <>
+          {/* Virtual Joystick (Bottom Left) */}
+          <div
+            id="virtual-joystick-base"
+            onTouchStart={handleJoystickStart}
+            onTouchMove={handleJoystickMove}
+            onTouchEnd={handleJoystickEnd}
+            onPointerDown={handleJoystickStart}
+            onPointerMove={joystickActive ? handleJoystickMove : undefined}
+            onPointerUp={handleJoystickEnd}
+            style={{
+              position: "absolute",
+              bottom: 24,
+              left: 24,
+              width: "110px",
+              height: "110px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(15, 23, 42, 0.65)",
+              border: "2px solid rgba(250, 204, 21, 0.4)",
+              pointerEvents: "auto",
+              touchAction: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Joystick Thumb Stick */}
+            <div
+              style={{
+                width: "46px",
+                height: "46px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+                border: "2px solid #FEF08A",
+                transform: `translate(${joystickPos.x}px, ${joystickPos.y}px)`,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              }}
+            />
           </div>
 
-          {chatMessages.slice(isChatExpanded ? -20 : -3).map((msg) => (
-            <div key={msg.id} style={{ lineHeight: "1.4" }}>
-              <span style={{ color: msg.isSystem ? "#f59e0b" : "#38bdf8", fontWeight: 700 }}>
-                {msg.senderName}:{" "}
-              </span>
-              <span style={{ color: msg.isSystem ? "#fef08a" : "#f8fafc" }}>{msg.text}</span>
+          {/* Action & Rotate Buttons Cluster (Bottom Right) */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 24,
+              right: 20,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "10px",
+              pointerEvents: "auto",
+            }}
+          >
+            {/* Camera Rotate Buttons (Roblox Style: Spin Camera Left/Right) */}
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onPointerDown={() => onRotateCamera?.(1)}
+                onPointerUp={() => onRotateCamera?.(0)}
+                onTouchStart={() => onRotateCamera?.(1)}
+                onTouchEnd={() => onRotateCamera?.(0)}
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(15, 23, 42, 0.8)",
+                  border: "2px solid #38BDF8",
+                  color: "#38BDF8",
+                  fontSize: "18px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.5)",
+                }}
+                title="Rotate Camera Left"
+              >
+                ◀🔄
+              </button>
+              <button
+                onPointerDown={() => onRotateCamera?.(-1)}
+                onPointerUp={() => onRotateCamera?.(0)}
+                onTouchStart={() => onRotateCamera?.(-1)}
+                onTouchEnd={() => onRotateCamera?.(0)}
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(15, 23, 42, 0.8)",
+                  border: "2px solid #38BDF8",
+                  color: "#38BDF8",
+                  fontSize: "18px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.5)",
+                }}
+                title="Rotate Camera Right"
+              >
+                🔄▶
+              </button>
             </div>
-          ))}
-        </div>
 
-        {/* Chat Input */}
-        <form onSubmit={handleChatSubmit} style={{ display: "flex", gap: "4px" }}>
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Say something to festival... (Enter)"
-            maxLength={140}
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(15, 23, 42, 0.95)",
-              border: "1px solid #475569",
-              borderRadius: "10px",
-              padding: "6px 10px",
-              fontSize: "11px",
-              color: "#FFF",
-              outline: "none",
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#ca8a04",
-              border: "none",
-              borderRadius: "10px",
-              padding: "6px 12px",
-              color: "#FFF",
-              fontWeight: 800,
-              fontSize: "11px",
-              cursor: "pointer",
-            }}
-          >
-            Send
-          </button>
-        </form>
-      </div>
+            {/* Jump & Interact Action Row */}
+            <div style={{ display: "flex", gap: "8px" }}>
+              {/* Interact [E] Button */}
+              <button
+                onClick={onInteract}
+                style={{
+                  width: "54px",
+                  height: "54px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #059669 0%, #0D9488 100%)",
+                  border: "2px solid #34D399",
+                  color: "#FFF",
+                  fontSize: "13px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                }}
+              >
+                <span>⚡</span>
+                <span style={{ fontSize: "10px" }}>USE [E]</span>
+              </button>
 
-      {/* ─── Mobile Touch Controls ────────────────────────────────────────────── */}
-      {showMobileControls && (
-        <div style={{ position: "absolute", bottom: 20, right: 12, pointerEvents: "auto" }}>
-          <button
-            onPointerDown={() => onJumpTouch?.(true)}
-            onPointerUp={() => onJumpTouch?.(false)}
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "50%",
-              backgroundColor: "rgba(196, 30, 58, 0.85)",
-              border: "2px solid #ffd700",
-              color: "#FFF",
-              fontSize: "14px",
-              fontWeight: 900,
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-            }}
-          >
-            JUMP
-          </button>
-        </div>
+              {/* Jump [Space] Button */}
+              <button
+                onPointerDown={() => onJumpTouch?.(true)}
+                onPointerUp={() => onJumpTouch?.(false)}
+                onTouchStart={() => onJumpTouch?.(true)}
+                onTouchEnd={() => onJumpTouch?.(false)}
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #B91C1C 0%, #DC2626 100%)",
+                  border: "2.5px solid #FCD34D",
+                  color: "#FFF",
+                  fontSize: "13px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 6px 16px rgba(0,0,0,0.6)",
+                }}
+              >
+                <span>🦘</span>
+                <span style={{ fontSize: "11px" }}>JUMP</span>
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

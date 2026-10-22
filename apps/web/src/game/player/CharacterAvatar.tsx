@@ -286,10 +286,10 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
                 {speechBubble}
               </div>
             )}
-            {showNameTag && (
+            {showNameTag && !isLocalPlayer && (
               <div
                 style={{
-                  backgroundColor: isLocalPlayer ? "rgba(196, 30, 58, 0.88)" : "rgba(30, 41, 59, 0.82)",
+                  backgroundColor: "rgba(30, 41, 59, 0.85)",
                   color: "#ffffff",
                   padding: "2px 8px",
                   borderRadius: "12px",
@@ -297,10 +297,10 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
                   fontWeight: 700,
                   textShadow: "0 1px 2px rgba(0,0,0,0.8)",
                   letterSpacing: "0.5px",
-                  border: isLocalPlayer ? "1px solid #ffd700" : "1px solid rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.2)",
                 }}
               >
-                {isLocalPlayer ? `⭐ ${displayName}` : displayName}
+                {displayName}
               </div>
             )}
           </div>

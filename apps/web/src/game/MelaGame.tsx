@@ -149,6 +149,7 @@ export const MelaGame: React.FC = () => {
   });
   const [virtualJoystick, setVirtualJoystick] = useState<{ x: number; y: number } | null>(null);
   const [virtualJump, setVirtualJump] = useState<boolean>(false);
+  const [cameraRotateStep, setCameraRotateStep] = useState<number>(0);
 
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -290,7 +291,9 @@ export const MelaGame: React.FC = () => {
   }, [serverHttpUrl]);
 
   // Join Lobby Handlers (Only connects when user explicitly clicks Play!)
-  const handleJoinMultiplayer = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2") => {
+  const handleJoinMultiplayer = (name: string, avType: "boy1" | "boy2" | "girl1" | "girl2", serverId?: string) => {
+    const chosenServer = serverId || currentServerId;
+    setCurrentServerId(chosenServer);
     setDisplayName(name);
     setAvatarPresetId(avType);
     const preset = AVATAR_PRESETS.find((p) => p.id === avType) ?? AVATAR_PRESETS[0];
@@ -300,13 +303,13 @@ export const MelaGame: React.FC = () => {
 
     setConnectionState("connecting");
     setRemotePlayers(new Map());
-    networkManager.connect(name, newCustomization, currentServerId).then((connected) => {
+    networkManager.connect(name, newCustomization, chosenServer).then((connected) => {
       if (connected) {
         setIsOnline(true);
         setConnectionState("online");
         showToast(
           `Swagatam ${name}! Connected to ${
-            currentServerId === "melaverse-server-2"
+            chosenServer === "melaverse-server-2"
               ? "Pokhara Chautari (Server 2)"
               : "Kathmandu Mela (Server 1)"
           }! 🌐`
@@ -1187,6 +1190,7 @@ export const MelaGame: React.FC = () => {
           onNearbyInteractionChange={setNearbyInteraction}
           virtualJoystick={virtualJoystick}
           virtualJump={virtualJump}
+          cameraRotateStep={cameraRotateStep}
           isLockedInAttraction={isSeatedOnSwing}
           isSeatedOnSwing={isSeatedOnSwing}
           swingAngle={swingAngle}
@@ -1400,6 +1404,7 @@ export const MelaGame: React.FC = () => {
           showMobileControls={showMobileControls}
           onJoystickMove={setVirtualJoystick}
           onJumpTouch={setVirtualJump}
+          onRotateCamera={setCameraRotateStep}
           heldItem={heldItem}
           selectedHotbarSlot={selectedHotbarSlot}
           onSelectHotbarSlot={handleSelectHotbarSlot}
@@ -1433,6 +1438,14 @@ export const MelaGame: React.FC = () => {
         serverStatus={connectionState === "online" ? "online" : connectionState === "connecting" ? "connecting" : "offline"}
         ping={ping}
         serverName={currentServerId === "melaverse-server-2" ? "🏔️ Server 2: Pokhara Chautari" : "🇳🇵 Server 1: Kathmandu Mela"}
+        isMobileMode={showMobileControls}
+        onToggleMobileMode={(m) => setShowMobileControls(m)}
+        sfxVolume={soundManager.volume}
+        onSfxVolumeChange={(v) => soundManager.setVolume(v)}
+        musicVolume={soundManager.musicVolume}
+        onMusicVolumeChange={(v) => soundManager.setMusicVolume(v)}
+        server1Players={1}
+        server2Players={0}
       />
 
       {/* ─── Controls & Keybindings Guide Modal ─── */}
