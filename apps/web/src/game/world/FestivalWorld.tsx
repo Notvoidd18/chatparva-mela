@@ -371,97 +371,128 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
       ))}
 
       {/* ─── Detailed Interconnected Festival Pathways (बाटो तथा चौतारीहरू) ───────── */}
-      {/* Central Chautari Plaza Flagstone Roundabout */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 5]} receiveShadow>
-        <circleGeometry args={[18, 36]} />
+      {/* 1. Central Chautari Plaza Flagstone Roundabout (Centered at [0, 5]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 5]} receiveShadow>
+        <circleGeometry args={[11.5, 36]} />
         <meshStandardMaterial color="#A0522D" roughness={0.8} />
       </mesh>
       {/* Decorative Red Brick Outer Border for Plaza */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.038, 5]}>
-        <ringGeometry args={[17.2, 18.0, 36]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.008, 5]}>
+        <ringGeometry args={[10.9, 11.5, 36]} />
         <meshStandardMaterial color="#7C2D12" roughness={0.75} />
       </mesh>
 
-      {/* 1. Entrance Walkway Avenue (South Gate to Chautari) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.035, 34]} receiveShadow>
-        <planeGeometry args={[8, 32]} />
+      {/* 2. South Entrance Walkway Avenue (Bazaar Street: South Gate to Chautari border) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, 31.5]} receiveShadow>
+        <planeGeometry args={[7.2, 30]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
       {/* Entrance Avenue Brick Edging */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-4.1, -0.03, 34]}>
-        <planeGeometry args={[0.3, 32]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-3.75, 0.012, 31.5]}>
+        <planeGeometry args={[0.3, 30]} />
         <meshStandardMaterial color="#78350F" roughness={0.8} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[4.1, -0.03, 34]}>
-        <planeGeometry args={[0.3, 32]} />
-        <meshStandardMaterial color="#78350F" roughness={0.8} />
-      </mesh>
-
-      {/* 2. North Grand Mandir Promenade (Chautari to Temple Stairs from z = 5 to -53) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.035, -24]} receiveShadow>
-        <planeGeometry args={[7.2, 58]} />
-        <meshStandardMaterial color="#B25938" roughness={0.75} />
-      </mesh>
-      {/* Promenade Stone Border Curbs */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-3.7, -0.03, -24]}>
-        <planeGeometry args={[0.3, 58]} />
-        <meshStandardMaterial color="#78350F" roughness={0.8} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[3.7, -0.03, -24]}>
-        <planeGeometry args={[0.3, 58]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[3.75, 0.012, 31.5]}>
+        <planeGeometry args={[0.3, 30]} />
         <meshStandardMaterial color="#78350F" roughness={0.8} />
       </mesh>
 
-      {/* 3. West Path to Traditional Bamboo Linge Ping (Chautari [0,5] to Ping [-26, -10]) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.52]} position={[-13, -0.034, -2.5]} receiveShadow>
-        <planeGeometry args={[5.2, 30]} />
+      {/* 3. North Grand Mandir Promenade — Section 1 (Chautari border at z=-6.5 to Rangoli south border at z=-15.8) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, -11.15]} receiveShadow>
+        <planeGeometry args={[7.2, 9.3]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
-
-      {/* 4. Northwest Hill Path from Linge Ping to Scenic Hillside Dance Ring ([-26, -10] to [-26, -46]) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, -0.034, -28]} receiveShadow>
-        <planeGeometry args={[4.6, 36]} />
-        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      {/* Section 1 Curbs */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-3.75, 0.012, -11.15]}>
+        <planeGeometry args={[0.3, 9.3]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
       </mesh>
-      {/* Northwest Dance Ring Courtyard Apron & Path Behind Mula Ghar */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, -0.032, -46]} receiveShadow>
-        <circleGeometry args={[5.2, 32]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[3.75, 0.012, -11.15]}>
+        <planeGeometry args={[0.3, 9.3]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+
+      {/* 4. North Grand Mandir Promenade — Section 2 (Rangoli north border at z=-34.2 to Mandir Stairs at z=-52.0) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, -43.1]} receiveShadow>
+        <planeGeometry args={[7.2, 17.8]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
-      {/* Path connecting Mula Ghar back courtyard [-28, -39] to Dance Ring [-26, -46] */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-27, -0.033, -42.5]} receiveShadow>
-        <planeGeometry args={[4.8, 7]} />
-        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      {/* Section 2 Curbs */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-3.75, 0.012, -43.1]}>
+        <planeGeometry args={[0.3, 17.8]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[3.75, 0.012, -43.1]}>
+        <planeGeometry args={[0.3, 17.8]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
       </mesh>
 
-      {/* 5. Southwest Path to Forest Taas Circle (Chautari to [-28, 20]) */}
-      <mesh rotation={[-Math.PI / 2, 0, -0.52]} position={[-14, -0.034, 12.5]} receiveShadow>
-        <planeGeometry args={[4.8, 28]} />
-        <meshStandardMaterial color="#9C4124" roughness={0.8} />
-      </mesh>
-
-      {/* 6. Southeast Path to Aama Samuha Gathering Stage (Chautari to [26, 22]) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.52]} position={[13, -0.034, 13.5]} receiveShadow>
-        <planeGeometry args={[5.2, 28]} />
-        <meshStandardMaterial color="#B25938" roughness={0.75} />
-      </mesh>
-
-      {/* 7. Northeast Path to Langur Burja Game Pavilion (Chautari to [24, -12]) */}
-      <mesh rotation={[-Math.PI / 2, 0, -0.58]} position={[12, -0.034, -3.5]} receiveShadow>
-        <planeGeometry args={[5.2, 28]} />
-        <meshStandardMaterial color="#B25938" roughness={0.75} />
-      </mesh>
-
-      {/* 8. Cross Branch to Bada Dashain Mula Ghar (House 1 at [-28, -35]) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-15, -0.034, -35]} receiveShadow>
-        <planeGeometry args={[22, 4.4]} />
+      {/* 5. West Cross Branch to Bada Dashain Mula Ghar (House 1: Promenade curb x=-3.75 to House 1 porch x=-23.5) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-13.625, 0.007, -37.5]} receiveShadow>
+        <planeGeometry args={[19.75, 4.0]} />
         <meshStandardMaterial color="#A0522D" roughness={0.8} />
       </mesh>
 
-      {/* 9. Cross Branch to Dashain Maiti Ghar (House 2 at [28, -35]) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.034, -35]} receiveShadow>
-        <planeGeometry args={[22, 4.4]} />
+      {/* 6. East Cross Branch to Dashain Maiti Ghar (House 2: Promenade curb x=+3.75 to House 2 porch x=+23.5) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[13.625, 0.007, -37.5]} receiveShadow>
+        <planeGeometry args={[19.75, 4.0]} />
         <meshStandardMaterial color="#A0522D" roughness={0.8} />
+      </mesh>
+
+      {/* 7. West Path to Traditional Bamboo Linge Ping (Chautari border to Linge Ping Apron) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0.52]} position={[-15.75, 0.007, -4.0]} receiveShadow>
+        <planeGeometry args={[4.4, 14.5]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+      {/* Linge Ping Bamboo Courtyard Apron */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, 0.005, -10]} receiveShadow>
+        <circleGeometry args={[5.5, 24]} />
+        <meshStandardMaterial color="#A0522D" roughness={0.8} />
+      </mesh>
+
+      {/* 8. Northwest Pathway — Section A (Linge Ping Apron z=-15.5 to House 1 Cross Branch z=-35.5) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, 0.007, -25.5]} receiveShadow>
+        <planeGeometry args={[4.0, 20]} />
+        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      </mesh>
+
+      {/* 9. Northwest Pathway — Section B (House 1 Cross Branch z=-39.5 to Dance Ring Apron z=-41.5) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, 0.007, -40.5]} receiveShadow>
+        <planeGeometry args={[4.0, 2.0]} />
+        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      </mesh>
+      {/* Northwest Dance Ring Courtyard Apron Behind Mula Ghar */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, 0.005, -46]} receiveShadow>
+        <circleGeometry args={[4.5, 24]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+
+      {/* 10. Southwest Path to Forest Taas Circle (Chautari border to Taas Apron) */}
+      <mesh rotation={[-Math.PI / 2, 0, -0.49]} position={[-16.1, 0.007, 13.6]} receiveShadow>
+        <planeGeometry args={[4.4, 14.5]} />
+        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      </mesh>
+      {/* Forest Taas Circle Ground Clearing Apron */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-28, 0.005, 20]} receiveShadow>
+        <circleGeometry args={[5.5, 24]} />
+        <meshStandardMaterial color="#A0522D" roughness={0.8} />
+      </mesh>
+
+      {/* 11. Southeast Path to Aama Samuha Gathering Stage (Chautari border to Stage Apron) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0.58]} position={[15.35, 0.007, 15.0]} receiveShadow>
+        <planeGeometry args={[4.4, 14.5]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+
+      {/* 12. Northeast Path to Langur Burja Game Pavilion (Chautari border to Pavilion Apron) */}
+      <mesh rotation={[-Math.PI / 2, 0, -0.61]} position={[15.25, 0.007, -5.85]} receiveShadow>
+        <planeGeometry args={[4.4, 14.8]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+      {/* Langur Burja Pavilion Ground Apron */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[24, 0.005, -12]} receiveShadow>
+        <circleGeometry args={[5.0, 24]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
 
       {/* ─── Distant Nepal Scenery (Himalayan Giants & Rolling Hills on Far Horizon) ─ */}
