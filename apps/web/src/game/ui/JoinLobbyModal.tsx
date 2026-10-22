@@ -1094,7 +1094,7 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
         {/* Bottom Left: Dynamic Update Version Tag & Changelog Button */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 600 }}>
-            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.6 • Mandir Collision, Flagstone Paths &amp; Real Minigames
+            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.7 • Temple Sanctum Colliders &amp; Zero-Overlap Pathways
           </div>
           <button
             onClick={() => setShowChangelog(true)}
@@ -1196,11 +1196,27 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
               </button>
             </div>
 
-            {/* Version 0.2.6 */}
+            {/* Version 0.2.7 */}
             <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                 <span style={{ fontSize: "14px", fontWeight: 800, color: "#4ADE80" }}>
-                  v0.2.6 — Mandir Terrain Physics, Flagstone Paths &amp; Pure Real Multiplayer (Current)
+                  v0.2.7 — Solid Mandir Building Colliders &amp; Zero-Overlap Modular Pathways (Current)
+                </span>
+                <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
+              </div>
+              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#CBD5E1", lineHeight: "1.6" }}>
+                <li><strong>Solid Durga Mandir Sanctum Collider:</strong> Sealed the doorway gap and added an authoritative building collider across the Garbhagriha walls, altar, and deity idol (x: [-3.8, 3.8], z: [-78.8, -71.4]); devotees pray from the front portico under the bell and circumambulate the veranda, and can never clip or walk inside the temple structure.</li>
+                <li><strong>Walkable Raised Temple Veranda &amp; Steps:</strong> Synchronized vertical surface physics for the 3 stone temple steps (y = 3.15m to 3.75m) and raised stone veranda floor (y = 3.8m), completely eliminating plinth sinking.</li>
+                <li><strong>Solid Dan Peti Collider:</strong> Physical collision boundary around the traditional carved wooden donation box (x: 2.2, z: -69.5).</li>
+                <li><strong>Zero-Overlap Modular Pathways:</strong> Redesigned all festival avenues with millimeter-accurate tangent endpoints, eliminating overlapping meshes, curb clipping, and texture Z-fighting.</li>
+              </ul>
+            </div>
+
+            {/* Version 0.2.6 */}
+            <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 800, color: "#38BDF8" }}>
+                  v0.2.6 — Mandir Terrain Physics, Flagstone Paths &amp; Pure Real Multiplayer
                 </span>
                 <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
               </div>

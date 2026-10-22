@@ -59,10 +59,11 @@ export interface CollisionBox {
 }
 
 export const FESTIVAL_COLLIDERS: CollisionBox[] = [
-  // 1. Elevated Mandir Temple Sanctum (Grand North Temple at z = -75)
-  { minX: -5.5, maxX: -1.4, minZ: -78.5, maxZ: -71.5, name: "mandir_west_wall" },
-  { minX: 1.4, maxX: 5.5, minZ: -78.5, maxZ: -71.5, name: "mandir_east_wall" },
-  { minX: -5.5, maxX: 5.5, minZ: -79.5, maxZ: -77.5, name: "mandir_back_wall" },
+  // 1. Elevated Mandir Temple Building & Inner Sanctum (Grand North Temple at z = -75)
+  // Devotees pray, offer flowers, and ring the brass bell from the front portico (z = -70.8 to -68.0);
+  // solid temple collider blocks walking through walls, altar, or inside the temple building
+  { minX: -3.8, maxX: 3.8, minZ: -78.8, maxZ: -71.4, name: "durga_mandir_sanctum" },
+  { minX: 1.8, maxX: 2.6, minZ: -69.8, maxZ: -69.2, name: "mandir_dan_peti" },
 
   // 2. Dashain Tika House 1: Bada Dashain Mula Ghar (Northwest at x = -28, z = -35)
   { minX: -32.5, maxX: -23.5, minZ: -39.0, maxZ: -33.5, name: "tika_house_1" },

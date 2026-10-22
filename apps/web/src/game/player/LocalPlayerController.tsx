@@ -50,7 +50,9 @@ const OBSTACLES = [
   { x: -28, z: -35, radius: 4.6 }, // Tika House 1 (Bada Dashain Mula Ghar)
   { x: 28, z: -35, radius: 4.6 }, // Tika House 2 (Maiti Ghar)
   { x: 26, z: 22, radius: 4.2 }, // Aama Samuha Stage
-  { x: 0, z: -78.5, radius: 2.2 }, // Temple Sanctum Back Altar (Front stairs, portico, and prayer area at z=-53 to -74 are open!)
+  // Shree Durga Mata Mandir Sanctum & Altar (Solid temple building collider; devotees pray from front portico at z=-70.8)
+  { x: 0, z: -75.0, radius: 3.6 },
+  { x: 2.2, z: -69.5, radius: 0.45 }, // Mandir Dan Peti (Donation box)
   // Individual Pine Trees around Taas Grove
   { x: -32, z: 16, radius: 0.6 },
   { x: -24, z: 16, radius: 0.6 },
@@ -78,14 +80,23 @@ function distToSegment(px: number, pz: number, x1: number, z1: number, x2: numbe
 function getSurfaceHeight(x: number, z: number): number {
   const hillHeight = getTerrainHeight(x, z);
 
-  // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -75])
+  // 1. Shree Durga Mata Mandir Steps, Raised Plinth & Terracotta Courtyard (Temple Hill at [0, -75])
   const distToMandir = Math.hypot(x, z - (-75));
   // Central grand stone staircase (width 8.4m, from z = -52 to -68)
   if (Math.abs(x) <= 4.2 && z <= -52 && z >= -68) {
     const stepIdx = Math.floor((-52 - z) / 2.0);
     return Math.min(2.8, 0.35 + stepIdx * 0.35);
   }
-  // Elevated Mandir Plateau Plinth (level surface around temple)
+  // Temple Raised Stone Veranda / Plinth Floor (width 12m, depth 11m at [0, -75])
+  if (Math.abs(x) <= 6.0 && z <= -69.5 && z >= -80.5) {
+    return 3.8;
+  }
+  // Temple Front Stone Steps leading onto the veranda (z from -67.0 to -69.5)
+  if (Math.abs(x) <= 2.5 && z < -67.0 && z > -69.5) {
+    const templeStepIdx = Math.floor((-67.0 - z) / 0.8);
+    return 2.8 + Math.min(1.0, 0.35 + templeStepIdx * 0.35);
+  }
+  // Elevated Mandir Plateau Courtyard (level surface around temple)
   if (distToMandir <= 18) {
     return 2.8;
   }
