@@ -251,14 +251,14 @@ export class NetworkManager {
     this.onStatusChange?.(false);
   }
 
-  public sendInput(x: number, y: number, z: number, rotationY: number, animState: AnimationState) {
+  public sendInput(x: number, y: number, z: number, rotationY: number, animState: AnimationState, isFlyingKite: boolean = false) {
     if (!this.isConnected || !this.room) return;
     const now = performance.now();
     // Throttle network updates to ~20 Hz (50ms)
     if (now - this.lastInputSendTime < 45) return;
     this.lastInputSendTime = now;
 
-    this.room.send("player_input", { x, y, z, rotationY, animState });
+    this.room.send("player_input", { x, y, z, rotationY, animState, isFlyingKite });
   }
 
   public sendChat(text: string, channel: "global" | "proximity") {

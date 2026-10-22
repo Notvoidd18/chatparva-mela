@@ -126,18 +126,82 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
       rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, -0.7, 0.2);
       leftLegRef.current.rotation.x = 0;
       rightLegRef.current.rotation.x = 0;
-    } else if (animState === "nach") {
-      const danceSpeed = 7;
-      const sway = Math.sin(t * danceSpeed);
-      torsoRef.current.rotation.z = sway * 0.18;
-      torsoRef.current.position.y = 0.95 + Math.abs(sway) * 0.12;
-      headRef.current.rotation.y = -sway * 0.25;
-      leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, -1.8 + Math.cos(t * danceSpeed) * 0.5, 0.2);
-      rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -1.8 - Math.cos(t * danceSpeed) * 0.5, 0.2);
-      leftArmRef.current.rotation.z = THREE.MathUtils.lerp(leftArmRef.current.rotation.z, 0.85, 0.2);
-      rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, -0.85, 0.2);
-      leftLegRef.current.rotation.x = Math.sin(t * danceSpeed) * 0.3;
-      rightLegRef.current.rotation.x = -Math.sin(t * danceSpeed) * 0.3;
+    } else if (animState === "nach" || animState === "nepali_cultural_dance") {
+      // Traditional Nepali Sit-and-Stand Cultural Folk Dance (बस्ने र उठ्ने परम्परागत नेपाली नाच)
+      // Cycle duration: 7.2s
+      const cycle = (t * 0.9) % 7.2;
+      const sway = Math.sin(t * 7);
+
+      if (cycle < 3.2) {
+        // Phase 1: Standing graceful swaying dance with raised hand twists and footwork
+        torsoRef.current.position.y = 0.95 + Math.abs(sway) * 0.08;
+        torsoRef.current.rotation.z = Math.sin(t * 3.5) * 0.16;
+        headRef.current.rotation.y = -Math.sin(t * 3.5) * 0.25;
+        headRef.current.rotation.x = Math.sin(t * 4) * 0.08;
+
+        leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, -1.9 + Math.cos(t * 4) * 0.4, 0.2);
+        rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -1.9 - Math.cos(t * 4) * 0.4, 0.2);
+        leftArmRef.current.rotation.z = 0.85 + Math.sin(t * 4) * 0.2;
+        rightArmRef.current.rotation.z = -0.85 - Math.sin(t * 4) * 0.2;
+
+        leftLegRef.current.rotation.x = Math.sin(t * 5) * 0.35;
+        rightLegRef.current.rotation.x = -Math.sin(t * 5) * 0.35;
+        leftLegRef.current.position.set(-0.16, 0.55, 0);
+        rightLegRef.current.position.set(0.16, 0.55, 0);
+      } else if (cycle < 5.2) {
+        // Phase 2: Sitting / Kneeling graceful step (धर्ती छुने / घुँडा टेक्ने - Sit step)
+        const sitProgress = Math.sin(((cycle - 3.2) / 2.0) * Math.PI);
+        torsoRef.current.position.y = THREE.MathUtils.lerp(0.95, 0.52, sitProgress);
+        torsoRef.current.rotation.x = THREE.MathUtils.lerp(0, 0.25, sitProgress);
+        torsoRef.current.rotation.z = Math.sin(t * 4) * 0.08;
+
+        leftLegRef.current.position.set(-0.16, THREE.MathUtils.lerp(0.55, 0.38, sitProgress), 0);
+        rightLegRef.current.position.set(0.16, THREE.MathUtils.lerp(0.55, 0.38, sitProgress), 0);
+        leftLegRef.current.rotation.x = THREE.MathUtils.lerp(0, -1.3, sitProgress);
+        rightLegRef.current.rotation.x = THREE.MathUtils.lerp(0, -1.3, sitProgress);
+
+        // Hands gracefully gesturing low toward the ground
+        leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, -0.65, 0.2);
+        rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -0.65, 0.2);
+        leftArmRef.current.rotation.z = THREE.MathUtils.lerp(leftArmRef.current.rotation.z, 0.35, 0.2);
+        rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, -0.35, 0.2);
+      } else {
+        // Phase 3: Rising back up with 360 degree celebratory turn and clapping (उठ्ने नाच)
+        const riseProgress = (cycle - 5.2) / 2.0;
+        torsoRef.current.position.y = THREE.MathUtils.lerp(0.52, 0.95, riseProgress);
+        torsoRef.current.rotation.x = THREE.MathUtils.lerp(0.25, 0, riseProgress);
+        torsoRef.current.rotation.y = riseProgress * Math.PI * 2;
+
+        leftLegRef.current.position.set(-0.16, 0.55, 0);
+        rightLegRef.current.position.set(0.16, 0.55, 0);
+        leftLegRef.current.rotation.x = Math.sin(t * 8) * 0.2;
+        rightLegRef.current.rotation.x = -Math.sin(t * 8) * 0.2;
+
+        const clap = Math.sin(t * 12);
+        leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, -1.6, 0.2);
+        rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -1.6, 0.2);
+        leftArmRef.current.rotation.z = 0.5 + clap * 0.18;
+        rightArmRef.current.rotation.z = -0.5 - clap * 0.18;
+      }
+    } else if (animState === "playing_madal") {
+      // Rhythmic Madal percussionist playing posture
+      torsoRef.current.position.y = 0.95 + Math.sin(t * 6) * 0.04;
+      torsoRef.current.rotation.z = Math.sin(t * 3) * 0.06;
+      headRef.current.rotation.y = Math.sin(t * 3) * 0.12;
+      headRef.current.rotation.x = 0.15 + Math.abs(Math.sin(t * 6)) * 0.08;
+
+      // Left hand strikes low bass head on beat
+      const leftStrike = Math.sin(t * 6);
+      leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, -0.9 + leftStrike * 0.25, 0.25);
+      leftArmRef.current.rotation.z = THREE.MathUtils.lerp(leftArmRef.current.rotation.z, 0.55, 0.2);
+
+      // Right hand rapid syncopated treble slap
+      const rightStrike = Math.sin(t * 12);
+      rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -0.9 + rightStrike * 0.3, 0.25);
+      rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, -0.55, 0.2);
+
+      leftLegRef.current.rotation.x = Math.sin(t * 3) * 0.12;
+      rightLegRef.current.rotation.x = -Math.sin(t * 3) * 0.12;
     } else if (animState === "wave") {
       leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, 0, 0.15);
       rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, -2.5, 0.2);
@@ -396,6 +460,45 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
                 <meshStandardMaterial color="#FCD34D" metalness={0.8} roughness={0.2} />
               </mesh>
             ))}
+          </group>
+        )}
+
+        {/* ─── Traditional Nepali Madal Drum (मादल) ─── */}
+        {(animState === "playing_madal" || (heldItem as string) === "madal") && (
+          <group position={[0, -0.12, 0.28]} rotation={[0.15, 0, Math.PI / 2]}>
+            {/* Wooden Barrel Body */}
+            <mesh castShadow>
+              <cylinderGeometry args={[0.11, 0.14, 0.54, 16]} />
+              <meshStandardMaterial color="#5C2C16" roughness={0.7} />
+            </mesh>
+            {/* Traditional Golden/Leather Ropes (तानाहरू) */}
+            <mesh>
+              <cylinderGeometry args={[0.112, 0.142, 0.44, 8]} />
+              <meshStandardMaterial color="#D4AF37" wireframe />
+            </mesh>
+            {/* Left Bass Drum Head (Dhyangro) with black Khari */}
+            <mesh position={[0, 0.27, 0]}>
+              <cylinderGeometry args={[0.115, 0.115, 0.02, 16]} />
+              <meshStandardMaterial color="#E2E8F0" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, 0.281, 0]}>
+              <circleGeometry args={[0.065, 16]} />
+              <meshBasicMaterial color="#18181B" />
+            </mesh>
+            {/* Right Treble Drum Head (Daayan) with black Khari */}
+            <mesh position={[0, -0.27, 0]}>
+              <cylinderGeometry args={[0.142, 0.142, 0.02, 16]} />
+              <meshStandardMaterial color="#E2E8F0" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, -0.281, 0]}>
+              <circleGeometry args={[0.05, 16]} />
+              <meshBasicMaterial color="#18181B" />
+            </mesh>
+            {/* Leather Shoulder Strap across body */}
+            <mesh position={[0, 0, -0.12]} rotation={[0, 0, -Math.PI / 4]}>
+              <torusGeometry args={[0.26, 0.015, 6, 16]} />
+              <meshStandardMaterial color="#854D0E" roughness={0.9} />
+            </mesh>
           </group>
         )}
 
@@ -720,6 +823,30 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
           <meshStandardMaterial color="#111827" />
         </mesh>
       </group>
+
+      {/* ─── Soaring Dashain Changa Kite (Airborne Multiplayer Visibility) ─── */}
+      {(animState === "flying_kite" || heldItem === "kite") && (
+        <group position={[0, 16, -10]}>
+          <group rotation={[0.2, 0, Math.PI / 4]}>
+            <mesh>
+              <planeGeometry args={[2.0, 2.0]} />
+              <meshStandardMaterial color={bodyColor || "#DC2626"} side={THREE.DoubleSide} roughness={0.4} />
+            </mesh>
+            <mesh position={[0, 0, 0.01]}>
+              <boxGeometry args={[0.03, 2.8, 0.02]} />
+              <meshStandardMaterial color="#FBBF24" />
+            </mesh>
+            <mesh position={[0, 0, 0.01]} rotation={[0, 0, Math.PI / 2]}>
+              <boxGeometry args={[0.03, 2.8, 0.02]} />
+              <meshStandardMaterial color="#FBBF24" />
+            </mesh>
+            <mesh position={[0, -1.2, 0.01]}>
+              <coneGeometry args={[0.3, 0.8, 3]} />
+              <meshStandardMaterial color="#F59E0B" side={THREE.DoubleSide} />
+            </mesh>
+          </group>
+        </group>
+      )}
     </group>
   );
 };

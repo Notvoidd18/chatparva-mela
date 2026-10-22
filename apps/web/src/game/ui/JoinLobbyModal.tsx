@@ -1094,7 +1094,7 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
         {/* Bottom Left: Dynamic Update Version Tag & Changelog Button */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 600 }}>
-            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.4 • Cultural Festival Engine
+            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.5 • Expanded World &amp; Dance Circles
           </div>
           <button
             onClick={() => setShowChangelog(true)}
@@ -1196,11 +1196,32 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
               </button>
             </div>
 
-            {/* Version 0.2.4 */}
+            {/* Version 0.2.5 */}
             <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                 <span style={{ fontSize: "14px", fontWeight: 800, color: "#4ADE80" }}>
-                  v0.2.4 — Cultural &amp; Physics Elevation Update (Current)
+                  v0.2.5 — Expanded World, 3 Dance Spots &amp; Cultural Beats (Current)
+                </span>
+                <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
+              </div>
+              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#CBD5E1", lineHeight: "1.6" }}>
+                <li><strong>Expanded Festival World (240m x 240m):</strong> Wide open exploration with distant structures, winding cobblestone streets, and removed tight invisible fences.</li>
+                <li><strong>Rangoli Hill Clearance:</strong> Relocated Durga Mandir hill to z = -75 with grand ceremonial stairs, keeping the sacred Tihar Rangoli completely flat and unobstructed.</li>
+                <li><strong>3 Dedicated Dance Circles:</strong> Added 3 sacred dance rings across the map (Aama Samuha, Deusi Bhailo, Mandir Hill) with automatic Aama Bhailo folk song and synchronized dancing.</li>
+                <li><strong>Cultural Sit-and-Stand Dance Step:</strong> Authentic Nepali folk dance choreo where avatars sway, gracefully sit/kneel, rise, and spin 360 degrees.</li>
+                <li><strong>Madal Player &amp; 5 Dancers on Stage:</strong> Added Kancha Dai playing a 3D Madal with rhythmic beat + Bikram Bhai flute player + 5 dancing aunties.</li>
+                <li><strong>Individual Gundri Seating:</strong> 8 distinct ground mats so real players sit in separate spots instead of overlapping.</li>
+                <li><strong>Multiplayer Kite Synchronization:</strong> Soaring Dashain Changa kite rendered high in the sky with string visible across all multiplayer clients.</li>
+                <li><strong>Live Working FPS Counter:</strong> Real-time frame rate metric on the HUD.</li>
+                <li><strong>Tab Favicon &amp; Hover Effects:</strong> Custom SVG temple/kite favicon on browser tab and tactile button micro-animations.</li>
+              </ul>
+            </div>
+
+            {/* Version 0.2.4 */}
+            <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 800, color: "#38BDF8" }}>
+                  v0.2.4 — Cultural &amp; Physics Elevation Update
                 </span>
                 <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
               </div>

@@ -32,6 +32,8 @@ export const AnimationStateSchema = z.enum([
   "eating",
   "wearing_topi",
   "flying_kite",
+  "playing_madal",
+  "nepali_cultural_dance",
 ]);
 
 export type AnimationStateType = z.infer<typeof AnimationStateSchema>;
@@ -44,6 +46,8 @@ export const EmoteTypeSchema = z.enum([
   "clapping",
   "clapping_dance",
   "swaying_dance",
+  "playing_madal",
+  "nepali_cultural_dance",
 ]);
 export type EmoteType = z.infer<typeof EmoteTypeSchema>;
 

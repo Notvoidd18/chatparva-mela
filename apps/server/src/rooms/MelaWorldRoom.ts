@@ -129,6 +129,10 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
       if (typeof message.animState === "string") {
         player.animState = message.animState;
       }
+
+      if (typeof (message as any).isFlyingKite === "boolean") {
+        player.isFlyingKite = (message as any).isFlyingKite;
+      }
     });
 
     // 2. Emotes
@@ -326,10 +330,6 @@ export class MelaWorldRoom extends Room<{ state: MelaWorldState }> {
     this.onMessage("toggle_changa", (client, isFlying: boolean) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
-      if (!player.hasChanga && isFlying) {
-        client.send("error", "You do not own a Changa yet! Visit the Kite Stall to buy one.");
-        return;
-      }
       player.isFlyingKite = Boolean(isFlying);
       player.animState = isFlying ? "flying_kite" : "idle";
     });

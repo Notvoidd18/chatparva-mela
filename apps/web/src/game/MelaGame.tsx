@@ -102,6 +102,28 @@ export const MelaGame: React.FC = () => {
   const [remotePlayers, setRemotePlayers] = useState<Map<string, RemotePlayerData>>(new Map());
   const [ping, setPing] = useState<number>(0);
 
+  // Live Working FPS Diagnostic Counter
+  const [fps, setFps] = useState<number>(60);
+  const frameCountRef = useRef<number>(0);
+  const lastFpsTimeRef = useRef<number>(performance.now());
+
+  useEffect(() => {
+    let animId: number;
+    const updateFps = () => {
+      frameCountRef.current++;
+      const now = performance.now();
+      const delta = now - lastFpsTimeRef.current;
+      if (delta >= 1000) {
+        setFps(Math.round((frameCountRef.current * 1000) / delta));
+        frameCountRef.current = 0;
+        lastFpsTimeRef.current = now;
+      }
+      animId = requestAnimationFrame(updateFps);
+    };
+    animId = requestAnimationFrame(updateFps);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
   // Attractions & Mini-Games State
   const [nearbyInteraction, setNearbyInteraction] = useState<string | null>(null);
   const [isSeatedOnSwing, setIsSeatedOnSwing] = useState<boolean>(false);
@@ -463,34 +485,40 @@ export const MelaGame: React.FC = () => {
     return Math.min(4, (isSeatedAtTaas ? 1 : 0) + remoteSeated);
   }, [remotePlayers, isSeatedAtTaas]);
 
-  // Check if player is in a cultural dance hotspot or near another dancing player
-  const isNearDanceZone =
-    Math.hypot(localPlayerPos.x - 26, localPlayerPos.z - 22) < 9.5 || // Aama Samuha courtyard
-    Math.hypot(localPlayerPos.x - 0, localPlayerPos.z - 5) < 7.5 || // Central Chautari plaza
-    Math.hypot(localPlayerPos.x - 0, localPlayerPos.z - (-38)) < 8.5; // Mandir courtyard
+  // 3 Dedicated Cultural Dance Spots on the Map
+  const CULTURAL_DANCE_SPOTS = [
+    { id: "spot1_aama", name: "Aama Samuha Chautari", x: 42, z: 34 },
+    { id: "spot2_bhailo", name: "Deusi Bhailo Courtyard", x: -38, z: 36 },
+    { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, z: -58 },
+  ];
+
+  const nearbyDanceSpot = CULTURAL_DANCE_SPOTS.find(
+    (s) => Math.hypot(localPlayerPos.x - s.x, localPlayerPos.z - s.z) < 5.2
+  );
+  const isNearDanceZone = Boolean(nearbyDanceSpot);
 
   const isNearDancingPlayer = Array.from(remotePlayers.values()).some((p) => {
     const d = Math.hypot(p.position.x - localPlayerPos.x, p.position.z - localPlayerPos.z);
-    return d < 9.0 && (p.animState === "nach" || p.animState === "clapping_dance" || p.animState === "swaying_dance");
+    return d < 8.0 && (p.animState === "nach" || p.animState === "nepali_cultural_dance" || p.animState === "clapping_dance");
   });
 
   const canJoinDance = isNearDanceZone || isNearDancingPlayer;
-  const isDancing = activeEmote === "nach" || activeEmote === "clapping_dance" || activeEmote === "swaying_dance";
+  const isDancing = activeEmote === "nach" || activeEmote === "nepali_cultural_dance" || activeEmote === "clapping_dance";
 
-  // Group Dancing Toggle: syncs dance state across multiplayer
+  // Group Dancing Toggle: syncs dance state across multiplayer and plays authentic Aama Bhailo song!
   const handleJoinDance = useCallback(() => {
     if (isDancing) {
       setActiveEmote(null);
-      showToast("Dance paused.");
+      soundManager.stopAamaBhailoSong();
+      showToast("Dance paused. विश्राम गरियो।");
     } else {
-      setActiveEmote("nach");
-      soundManager.playMadalBeat("high");
-      setIsMusicPlaying(true);
+      setActiveEmote("nepali_cultural_dance");
       soundManager.ensureAudio();
+      soundManager.playAamaBhailoSong();
       if (isOnline) {
-        networkManager.sendEmote("nach");
+        networkManager.sendEmote("nepali_cultural_dance");
       }
-      showToast("💃 Joined the Nepali group dance! नाचौं सबै मिलेर!");
+      showToast("💃 Joined the Aama Bhailo Cultural Dance! नाचौं साथीहरूसँग!");
     }
   }, [isDancing, isOnline]);
 
@@ -1002,7 +1030,7 @@ export const MelaGame: React.FC = () => {
   }) => {
     setLocalPlayerPos({ x: pos.x, y: pos.y, z: pos.z });
     if (isOnline) {
-      networkManager.sendInput(pos.x, pos.y, pos.z, pos.rotationY, pos.animState);
+      networkManager.sendInput(pos.x, pos.y, pos.z, pos.rotationY, pos.animState, isKiteFlying);
     }
   };
 
@@ -1184,6 +1212,8 @@ export const MelaGame: React.FC = () => {
           isKiteFlying={isKiteFlying}
           kiteData={kiteData}
           playerPosition={localPlayerPos}
+          onJoinDance={handleJoinDance}
+          isDancing={isDancing}
         />
 
         {/* Local Player Controller */}
@@ -1390,6 +1420,7 @@ export const MelaGame: React.FC = () => {
           tokens={tokens}
           score={score}
           ping={ping}
+          fps={fps}
           isOnline={isOnline}
           connectionState={connectionState}
           playerCount={remotePlayers.size + 1}

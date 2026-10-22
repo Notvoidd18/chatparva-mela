@@ -1,0 +1,21 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#18181B" />
+  <!-- Crossed Kites in background -->
+  <g opacity="0.9">
+    <!-- Left Kite -->
+    <path d="M14 24L24 14L34 24L24 34Z" fill="#DC2626" stroke="#FEF08A" stroke-width="1.5" transform="rotate(-15 24 24)" />
+    <!-- Right Kite -->
+    <path d="M30 24L40 14L50 24L40 34Z" fill="#F59E0B" stroke="#FEF08A" stroke-width="1.5" transform="rotate(15 40 24)" />
+  </g>
+  <!-- Pagoda Base Mound -->
+  <path d="M8 58H56L50 50H14L8 58Z" fill="#78350F" stroke="#FDE047" stroke-width="1.2" />
+  <!-- Pagoda Lower Tier -->
+  <path d="M15 50H49L45 40H19L15 50Z" fill="#B91C1C" stroke="#FCD34D" stroke-width="1.2" />
+  <path d="M11 40H53L48 32H16L11 40Z" fill="#991B1B" stroke="#FEF08A" stroke-width="1.5" />
+  <!-- Pagoda Upper Tier -->
+  <path d="M19 32H45L41 23H23L19 32Z" fill="#B91C1C" stroke="#FCD34D" stroke-width="1.2" />
+  <path d="M16 23H48L42 16H22L16 23Z" fill="#DC2626" stroke="#FEF08A" stroke-width="1.5" />
+  <!-- Golden Gajur Pinnacle -->
+  <path d="M32 6L29 16H35L32 6Z" fill="#FACC15" stroke="#FEF08A" stroke-width="1.2" />
+  <circle cx="32" cy="6" r="2.5" fill="#FEF08A" />
+</svg>

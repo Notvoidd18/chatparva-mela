@@ -10,6 +10,7 @@ interface GameHUDProps {
   tokens: number;
   score: number;
   ping: number;
+  fps?: number;
   isOnline: boolean;
   connectionState: "connecting" | "online" | "reconnecting" | "disconnected";
   playerCount: number;
@@ -53,6 +54,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   npr,
   tokens = 0,
   ping,
+  fps = 60,
   isOnline,
   connectionState,
   playerCount,
@@ -234,6 +236,28 @@ export const GameHUD: React.FC<GameHUDProps> = ({
               {connectionState === "online" ? `${ping}ms` : "Offline"}
             </span>
           </button>
+
+          {/* Real-time FPS Diagnostic Badge */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "rgba(18, 18, 24, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              borderRadius: "20px",
+              padding: "4px 10px",
+              fontSize: "11px",
+              fontWeight: 800,
+              color: fps >= 50 ? "#4ADE80" : fps >= 30 ? "#FACC15" : "#F87171",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+            }}
+            title="Real-time Client Frame Rate"
+          >
+            <span style={{ fontSize: "10px" }}>⚡</span>
+            <span>{fps} FPS</span>
+          </div>
         </div>
 
         {/* Right: Profile, Audio & Dropdown Menu Button */}

@@ -504,6 +504,93 @@ class SoundEngine {
       osc.stop(t + 0.35);
     });
   }
+
+  // ─── Aama Bhailo & Deusi Cultural Folk Song Engine ────────────────────────
+  private bhailoInterval: any = null;
+  private isBhailoPlaying: boolean = false;
+
+  /** Start playing the authentic Aama Samuha Deusi-Bhailo melody with rhythmic Madal accompaniment */
+  public playAamaBhailoSong() {
+    if (this.isBhailoPlaying || this.isMusicMuted) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    this.isBhailoPlaying = true;
+    const melody = [
+      { freq: 392.0, madal: "low" },   // G4 "Bhai-"
+      { freq: 392.0, madal: null },    // G4 "-li-"
+      { freq: 440.0, madal: "high" },   // A4 "-ni"
+      { freq: 392.0, madal: null },    // G4 "aai-"
+      { freq: 329.63, madal: "low" },  // E4 "-na"
+      { freq: 293.66, madal: null },   // D4 "aan-"
+      { freq: 329.63, madal: "high" },  // E4 "-gan"
+      { freq: 392.0, madal: null },    // G4 "ba-"
+      { freq: 440.0, madal: "low" },   // A4 "-ri"
+      { freq: 493.88, madal: null },   // B4 "lai,"
+      { freq: 440.0, madal: "high" },  // A4 "he"
+      { freq: 392.0, madal: null },    // G4 "aa-"
+      { freq: 329.63, madal: "low" },  // E4 "-ma"
+      { freq: 392.0, madal: null },    // G4 "bhai-"
+      { freq: 392.0, madal: "high" },  // G4 "-lo!"
+      { freq: 0, madal: null },        // Rest
+    ];
+
+    let step = 0;
+    const stepDuration = 185; // ms per eighth note
+
+    const playStep = () => {
+      if (!this.isBhailoPlaying || this.isMusicMuted || !this.ctx) return;
+      const note = melody[step % melody.length];
+      const now = this.ctx.currentTime;
+
+      // Play Bansuri / Harmonium flute note
+      if (note.freq > 0) {
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        // Warm bamboo bansuri harmonics
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(note.freq, now);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(note.freq * 2.8, now);
+
+        const vol = 0.16 * this.musicVolume;
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+
+      // Play accompanying Madal strike
+      if (note.madal === "low") {
+        this.playMadalBeat("low");
+      } else if (note.madal === "high") {
+        this.playMadalBeat("high");
+      }
+
+      step++;
+    };
+
+    playStep();
+    this.bhailoInterval = setInterval(playStep, stepDuration);
+  }
+
+  /** Stop Aama Bhailo song */
+  public stopAamaBhailoSong() {
+    this.isBhailoPlaying = false;
+    if (this.bhailoInterval) {
+      clearInterval(this.bhailoInterval);
+      this.bhailoInterval = null;
+    }
+  }
 }
 
 export const soundManager = new SoundEngine();

@@ -168,6 +168,7 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
   const [showLocalName, setShowLocalName] = useState(false);
   const wasSeatedAtTaasRef = useRef(false);
   const wasSeatedAtAamaRef = useRef(false);
+  const aamaSitSlotRef = useRef<{ x: number; z: number }>({ x: 42.0, z: 30.5 });
   const wasSeatedAtChautariRef = useRef(false);
   const chautariSitAngleRef = useRef(0);
   const wasSeatedOnSwingRef = useRef(false);
@@ -422,7 +423,8 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
     // Handle transition out of seating at Aama Samuha
     if (wasSeatedAtAamaRef.current && !isSeatedAtAama) {
       wasSeatedAtAamaRef.current = false;
-      posRef.current.set(26, 0, 29.5); // Stand safely in front of the ground seating mat
+      const slot = aamaSitSlotRef.current;
+      posRef.current.set(slot.x, 0, slot.z + 2.0); // Stand safely in front of the ground seating mat
       velocityYRef.current = 0;
       isGroundedRef.current = true;
       rotYRef.current = 0;
@@ -431,9 +433,32 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
 
     // If seated at Aama Samuha Gathering Stage on the ground in front of dancers
     if (isSeatedAtAama) {
-      wasSeatedAtAamaRef.current = true;
-      // Sit on traditional woven Gundri mat on the ground in front of stage (World [26, 0.05, 27.5])
-      posRef.current.set(26, 0.05, 27.5);
+      if (!wasSeatedAtAamaRef.current) {
+        wasSeatedAtAamaRef.current = true;
+        const AAMA_SEAT_SLOTS = [
+          { x: 38.0, z: 29.5 },
+          { x: 40.5, z: 29.5 },
+          { x: 43.5, z: 29.5 },
+          { x: 46.0, z: 29.5 },
+          { x: 38.0, z: 31.8 },
+          { x: 40.5, z: 31.8 },
+          { x: 43.5, z: 31.8 },
+          { x: 46.0, z: 31.8 },
+        ];
+        let closest = AAMA_SEAT_SLOTS[0];
+        let minD = Infinity;
+        for (const s of AAMA_SEAT_SLOTS) {
+          const d = Math.hypot(posRef.current.x - s.x, posRef.current.z - s.z);
+          if (d < minD) {
+            minD = d;
+            closest = s;
+          }
+        }
+        aamaSitSlotRef.current = closest;
+      }
+
+      const slot = aamaSitSlotRef.current;
+      posRef.current.set(slot.x, 0.05, slot.z);
       rotYRef.current = Math.PI; // Face north toward the cultural dancers
 
       const isClapPressed = keysRef.current["Space"] || virtualJump;
@@ -446,8 +471,8 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
       }
 
       // Camera positioned behind player looking over their shoulders at dancing elders
-      camera.position.lerp(new THREE.Vector3(26, 1.8, 31.0), 0.12);
-      camera.lookAt(26, 1.3, 22.0);
+      camera.position.lerp(new THREE.Vector3(slot.x, 1.8, slot.z + 3.2), 0.12);
+      camera.lookAt(slot.x, 1.3, 24.0);
 
       onPositionChange?.({
         x: posRef.current.x,

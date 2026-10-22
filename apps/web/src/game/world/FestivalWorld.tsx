@@ -153,6 +153,8 @@ interface FestivalWorldProps {
   isKiteFlying?: boolean;
   kiteData?: { x: number; y: number; z: number; bank: number };
   playerPosition?: { x: number; y: number; z: number };
+  onJoinDance?: () => void;
+  isDancing?: boolean;
 }
 
 export const FestivalWorld: React.FC<FestivalWorldProps> = ({
@@ -170,6 +172,8 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
   onInteractSanstha,
   onInteractAamaBench,
   onInteractChautari,
+  onJoinDance,
+  isDancing = false,
   nearbyInteraction,
   isSeatedOnSwing = false,
   swingOccupantName = null,
@@ -322,28 +326,30 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         <meshStandardMaterial color="#3E6B32" roughness={0.9} />
       </mesh>
 
-      {/* ─── Elevated Mandir Hill Mounds & Terraces (पहाडी ढिस्को र खुड्किलाहरू) ─── */}
-      {/* Lower Terraced Hill Plinth under Temple */}
-      <mesh position={[0, 0.45, -42]} receiveShadow>
-        <cylinderGeometry args={[18, 22, 1.0, 32]} />
+      {/* ─── Elevated Mandir Hill Mounds & Terraces (पहाडी ढिस्को र खुड्किलाहरू at z = -75) ─── */}
+      {/* Lower Terraced Hill Plinth under Temple (Plateau at z = -75, completely away from Rangoli at z = -28) */}
+      <mesh position={[0, 0.9, -75]} receiveShadow>
+        <cylinderGeometry args={[18, 24, 1.8, 32]} />
         <meshStandardMaterial color="#4A6B36" roughness={0.9} />
       </mesh>
       {/* Upper Stone Hill Tier */}
-      <mesh position={[0, 1.35, -42]} receiveShadow>
-        <cylinderGeometry args={[13, 16, 0.9, 32]} />
+      <mesh position={[0, 2.0, -75]} receiveShadow>
+        <cylinderGeometry args={[14, 18, 1.2, 32]} />
         <meshStandardMaterial color="#78350F" roughness={0.85} />
       </mesh>
-      {/* Grand Ceremonial Stone Steps leading up to the Mandir Hill */}
+      {/* Grand Ceremonial Stone Steps leading up to the Mandir Hill from z = -54 to -68 */}
       {[
-        { y: 0.15, z: -27.5, width: 6.5, depth: 1.8 },
-        { y: 0.45, z: -29.2, width: 6.2, depth: 1.8 },
-        { y: 0.75, z: -30.9, width: 5.9, depth: 1.8 },
-        { y: 1.05, z: -32.6, width: 5.6, depth: 1.8 },
-        { y: 1.35, z: -34.3, width: 5.3, depth: 1.8 },
-        { y: 1.65, z: -36.0, width: 5.0, depth: 1.8 },
+        { y: 0.25, z: -54.0, width: 7.2, depth: 2.0 },
+        { y: 0.60, z: -56.0, width: 6.9, depth: 2.0 },
+        { y: 0.95, z: -58.0, width: 6.6, depth: 2.0 },
+        { y: 1.30, z: -60.0, width: 6.3, depth: 2.0 },
+        { y: 1.65, z: -62.0, width: 6.0, depth: 2.0 },
+        { y: 2.00, z: -64.0, width: 5.7, depth: 2.0 },
+        { y: 2.35, z: -66.0, width: 5.4, depth: 2.0 },
+        { y: 2.70, z: -68.0, width: 5.1, depth: 2.0 },
       ].map((step, idx) => (
         <mesh key={`mandir-hill-step-${idx}`} position={[0, step.y, step.z]} receiveShadow castShadow>
-          <boxGeometry args={[step.width, 0.3, step.depth]} />
+          <boxGeometry args={[step.width, 0.35, step.depth]} />
           <meshStandardMaterial color="#B45309" roughness={0.75} />
         </mesh>
       ))}
@@ -732,19 +738,28 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         )}
       </group>
 
-      {/* ─── 4. Tihar Rangoli & Diya Stations ───────────────────────────────── */}
-      <group position={[0, 0.02, -25]}>
+      {/* ─── 4. Tihar Rangoli & Diya Stations (Sacred Flat Paved Plaza) ──────── */}
+      <group position={[0, 0.04, -25]}>
+        {/* Sacred Octagonal Courtyard Paving — perfectly flat and above fairground earth */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <circleGeometry args={[7.5, 32]} />
+          <circleGeometry args={[9.2, 8]} />
+          <meshStandardMaterial color="#881337" roughness={0.75} />
+        </mesh>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
+          <circleGeometry args={[7.8, 32]} />
           <meshStandardMaterial color="#E11D48" roughness={0.7} />
         </mesh>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-          <ringGeometry args={[4.5, 7.0, 32]} />
+          <ringGeometry args={[4.8, 7.5, 32]} />
           <meshStandardMaterial color="#FBBF24" roughness={0.7} />
         </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[2.0, 4.2, 32]} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+          <ringGeometry args={[2.2, 4.5, 32]} />
           <meshStandardMaterial color="#0284C7" roughness={0.7} />
+        </mesh>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+          <circleGeometry args={[1.8, 16]} />
+          <meshStandardMaterial color="#FEF08A" roughness={0.6} />
         </mesh>
 
         {INITIAL_DIYA_STATIONS.map((station, idx) => {
@@ -1029,10 +1044,10 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           </mesh>
         </group>
 
-        {/* 3 Dedicated Cultural Dancers on Stage (Bots Dancing in Center, while Sitting Area is for Real Players) */}
+        {/* Dedicated Cultural Dancers & Folk Musicians on Stage */}
         <group ref={dancersRef} position={[0, 0.8, 0]}>
-          {/* 1. Radhika Didi - Maruni Dance */}
-          <group position={[-1.5, 0, 0.2]}>
+          {/* 1. Radhika Didi - Sit-and-Stand Maruni Dance */}
+          <group position={[-2.4, 0, 0.2]}>
             <CharacterAvatar
               displayName="Radhika Didi (मारुनी)"
               animState="nach"
@@ -1040,7 +1055,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             />
           </group>
           {/* 2. Sita Didi - Kauda Rhythm Dance */}
-          <group position={[0, 0, 0.6]}>
+          <group position={[-1.2, 0, 0.6]}>
             <CharacterAvatar
               displayName="Sita Didi (कौडा)"
               animState="swaying_dance"
@@ -1048,11 +1063,43 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             />
           </group>
           {/* 3. Parvati Aama - Deusi-Bhailo Dance */}
-          <group position={[1.5, 0, 0.2]}>
+          <group position={[0, 0, 0.3]}>
             <CharacterAvatar
               displayName="Parvati Aama (देउसी)"
-              animState="clapping_dance"
+              animState="nach"
               customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
+            />
+          </group>
+          {/* 4. Laxmi Didi - Jhyaure Dance */}
+          <group position={[1.2, 0, 0.6]}>
+            <CharacterAvatar
+              displayName="Laxmi Didi (झ्याउरे)"
+              animState="clapping_dance"
+              customization={{ color: "#D97706", vestColor: "#DC2626", hasDhakaTopi: false, skinTone: "#D49B6A", device: "pc" }}
+            />
+          </group>
+          {/* 5. Mina Bainee - Tamang Selo Dance */}
+          <group position={[2.4, 0, 0.2]}>
+            <CharacterAvatar
+              displayName="Mina Bainee (सेलो)"
+              animState="nach"
+              customization={{ color: "#F43F5E", vestColor: "#38BDF8", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
+            />
+          </group>
+          {/* 6. Kancha Dai - Live Madal Player with 3D Madal Drum */}
+          <group position={[3.6, 0, -0.8]}>
+            <CharacterAvatar
+              displayName="Kancha Dai (मादले)"
+              animState="playing_madal"
+              customization={{ color: "#374151", vestColor: "#991B1B", hasDhakaTopi: true, skinTone: "#C68642", device: "pc" }}
+            />
+          </group>
+          {/* 7. Bikram Bhai - Flute Player (मुरली वादक) */}
+          <group position={[-3.6, 0, -0.8]}>
+            <CharacterAvatar
+              displayName="Bikram Bhai (मुरली)"
+              animState="idle"
+              customization={{ color: "#1F2937", vestColor: "#CA8A04", hasDhakaTopi: true, skinTone: "#D49B6A", device: "pc" }}
             />
           </group>
         </group>
@@ -1091,12 +1138,25 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             <meshStandardMaterial color="#CA8A04" roughness={0.8} />
           </mesh>
 
-          {/* Traditional Straw & Velvet Seating Mats (गुन्द्री चकटीहरू) for Real Players */}
-          {[-4.5, -2.2, 2.2, 4.5].map((x, idx) => (
-            <group key={`gundri-seat-${idx}`} position={[x, 0.05, idx % 2 === 0 ? -0.8 : 1.2]}>
+          {/* 8 Traditional Straw & Velvet Seating Mats (गुन्द्री चकटीहरू) for Real Players to sit in different places */}
+          {[
+            { x: -4.5, z: -0.8, color: "#991B1B" },
+            { x: -2.2, z: -0.8, color: "#15803D" },
+            { x: 0.0, z: -0.8, color: "#D97706" },
+            { x: 2.2, z: -0.8, color: "#1E3A8A" },
+            { x: 4.5, z: -0.8, color: "#7C2D12" },
+            { x: -3.2, z: 1.4, color: "#065F46" },
+            { x: 0.0, z: 1.4, color: "#B45309" },
+            { x: 3.2, z: 1.4, color: "#831843" },
+          ].map((mat, idx) => (
+            <group key={`gundri-seat-${idx}`} position={[mat.x, 0.05, mat.z]}>
               <mesh>
                 <cylinderGeometry args={[0.55, 0.55, 0.08, 16]} />
-                <meshStandardMaterial color={["#991B1B", "#15803D", "#D97706", "#1E3A8A"][idx]} roughness={0.8} />
+                <meshStandardMaterial color={mat.color} roughness={0.8} />
+              </mesh>
+              <mesh position={[0, 0.045, 0]}>
+                <cylinderGeometry args={[0.38, 0.38, 0.02, 16]} />
+                <meshStandardMaterial color="#FEF08A" roughness={0.7} />
               </mesh>
             </group>
           ))}
@@ -1879,9 +1939,9 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         })}
       </group>
 
-      {/* ─── 12. Shree Durga Mata Mandir (Phase 8) ─────────────────────────── */}
+      {/* ─── 12. Shree Durga Mata Mandir (Phase 8 Elevated North Hill) ─────── */}
       <DurgaMandir
-        position={[0, 2.5, -42]}
+        position={[0, 2.8, -75]}
         onPray={onPrayMandir}
         onOpenDanPeti={onOpenDanPeti}
         nearbyInteraction={nearbyInteraction}
@@ -1961,7 +2021,82 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         ))}
       </group>
 
-      {/* ─── 17. Optimized Nepali Trees (सल्ला, लालीगुराँस र पीपल) ─────────── */}
+      {/* ─── 17. 3 Cultural Dance Circles across the Map (नाच मण्डलहरू) ───────── */}
+      {[
+        { id: "spot1_aama", name: "Aama Samuha Chautari Stage", x: 42, y: 0.02, z: 34 },
+        { id: "spot2_bhailo", name: "Deusi Bhailo Village Plaza", x: -38, y: 0.02, z: 36 },
+        { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, y: 2.82, z: -58 },
+      ].map((spot) => {
+        const isPlayerNear = isNear(spot.x, spot.z, 5.0);
+        return (
+          <group key={spot.id} position={[spot.x, spot.y, spot.z]}>
+            {/* Sacred Lotus / Mandala Dance Ring Ground Floor */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+              <circleGeometry args={[3.8, 32]} />
+              <meshStandardMaterial color="#991B1B" roughness={0.7} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+              <ringGeometry args={[2.2, 3.7, 32]} />
+              <meshStandardMaterial color="#F59E0B" roughness={0.6} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+              <ringGeometry args={[0.8, 2.1, 32]} />
+              <meshStandardMaterial color="#DC2626" roughness={0.6} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+              <circleGeometry args={[0.7, 16]} />
+              <meshStandardMaterial color="#FEF08A" roughness={0.5} />
+            </mesh>
+
+            {/* Perimeter Festive Oil Lamps around the Dance Ring */}
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+              const angle = (i / 8) * Math.PI * 2;
+              const dx = Math.cos(angle) * 3.6;
+              const dz = Math.sin(angle) * 3.6;
+              return (
+                <group key={`dance-lamp-${spot.id}-${i}`} position={[dx, 0.08, dz]}>
+                  <mesh>
+                    <cylinderGeometry args={[0.12, 0.08, 0.08, 8]} />
+                    <meshStandardMaterial color="#B45309" roughness={0.8} />
+                  </mesh>
+                  <mesh position={[0, 0.08, 0]}>
+                    <coneGeometry args={[0.04, 0.12, 6]} />
+                    <meshBasicMaterial color="#FF9F1C" />
+                  </mesh>
+                  <pointLight color="#FF9F1C" intensity={0.8} distance={3} decay={2} position={[0, 0.15, 0]} />
+                </group>
+              );
+            })}
+
+            {/* Interactive Join the Dance Prompt */}
+            {isPlayerNear && (
+              <Html position={[0, 1.4, 0]} center distanceFactor={12} zIndexRange={[1, 10]}>
+                <button
+                  onClick={onJoinDance}
+                  style={{
+                    background: isDancing
+                      ? "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)"
+                      : "linear-gradient(135deg, #D97706 0%, #B45309 100%)",
+                    color: "#FFF",
+                    border: "2px solid #FCD34D",
+                    borderRadius: "16px",
+                    padding: "8px 18px",
+                    fontSize: "12px",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
+                  }}
+                >
+                  {isDancing ? "🛑 [E] Stop Dancing" : "💃 [E] Join the Dance (नाचमा सहभागी हुनुहोस्)"}
+                </button>
+              </Html>
+            )}
+          </group>
+        );
+      })}
+
+      {/* ─── 18. Optimized Nepali Trees (सल्ला, लालीगुराँस र पीपल) ─────────── */}
       <OptimizedFestivalTrees />
     </group>
   );
