@@ -58,6 +58,7 @@ export const AvatarCustomizationSchema = z.object({
   hasTika: z.boolean().default(false),
   hasJamara: z.boolean().default(false),
   avatarType: z.enum(["boy1", "boy2", "girl1", "girl2"]).default("boy1").optional(),
+  device: z.enum(["mobile", "pc"]).default("pc").optional(),
 });
 
 export type AvatarCustomizationType = z.infer<typeof AvatarCustomizationSchema>;

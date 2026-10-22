@@ -289,18 +289,51 @@ export const CharacterAvatar: React.FC<CharacterAvatarProps> = ({
             {showNameTag && !isLocalPlayer && (
               <div
                 style={{
-                  backgroundColor: "rgba(30, 41, 59, 0.85)",
+                  backgroundColor: "rgba(30, 41, 59, 0.88)",
                   color: "#ffffff",
-                  padding: "2px 8px",
+                  padding: "3px 8px",
                   borderRadius: "12px",
                   fontSize: "11px",
                   fontWeight: 700,
                   textShadow: "0 1px 2px rgba(0,0,0,0.8)",
                   letterSpacing: "0.5px",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
                 }}
               >
-                {displayName}
+                <span>{displayName}</span>
+                {/* Device Badge (PC or Mobile) */}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "2px",
+                    background: customization?.device === "mobile" ? "rgba(217, 119, 6, 0.9)" : "rgba(2, 132, 199, 0.9)",
+                    border: customization?.device === "mobile" ? "1px solid #FCD34D" : "1px solid #38BDF8",
+                    padding: "1px 4px",
+                    borderRadius: "4px",
+                    fontSize: "8px",
+                    fontWeight: 900,
+                    color: "#FFF",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {customization?.device === "mobile" ? (
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                      <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                  ) : (
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                  )}
+                  {customization?.device === "mobile" ? "MOB" : "PC"}
+                </span>
               </div>
             )}
           </div>

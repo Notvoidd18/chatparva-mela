@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export interface HotbarItem {
   id: string;
   name: string;
   nepaliName: string;
-  icon: string;
+  renderIcon: () => React.ReactNode;
   count: number;
   actionLabel: string;
   canUse: boolean;
@@ -25,6 +25,56 @@ interface MinecraftHotbarProps {
   onInteract: () => void;
 }
 
+// ─── Custom Clean SVG Icons (NO EMOJIS) ───────────────────────────────────────
+const Icons = {
+  Hand: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 11V6a2 2 0 0 0-4 0v5"/>
+      <path d="M14 10V4a2 2 0 0 0-4 0v7"/>
+      <path d="M10 10.5V6a2 2 0 0 0-4 0v8"/>
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+    </svg>
+  ),
+  Chiya: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+      <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/>
+      <line x1="6" y1="2" x2="6" y2="4"/>
+      <line x1="10" y1="2" x2="10" y2="4"/>
+      <line x1="14" y1="2" x2="14" y2="4"/>
+    </svg>
+  ),
+  SelRoti: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2.5" strokeLinecap="round">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="3.5" fill="#18181B"/>
+    </svg>
+  ),
+  Kite: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 21 11 12 20 3 11" fill="rgba(56, 189, 248, 0.2)"/>
+      <line x1="12" y1="2" x2="12" y2="20"/>
+      <line x1="3" y1="11" x2="21" y2="11"/>
+      <path d="M12 20l2 3-2 1-2-1z" fill="#FBBF24"/>
+    </svg>
+  ),
+  DhakaTopi: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 18h16l-3-10H7L4 18z" fill="rgba(239, 68, 68, 0.25)"/>
+      <line x1="4" y1="18" x2="20" y2="18"/>
+      <line x1="10" y1="8" x2="14" y2="18"/>
+      <line x1="14" y1="8" x2="10" y2="18"/>
+    </svg>
+  ),
+  Tika: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="10" r="4.5" fill="#E11D48"/>
+      <path d="M12 14v8" stroke="#16A34A" strokeWidth="2.5"/>
+      <path d="M9 18l3-2 3 2" stroke="#16A34A" strokeWidth="2"/>
+    </svg>
+  ),
+};
+
 export const MinecraftHotbar: React.FC<MinecraftHotbarProps> = ({
   selectedSlot,
   onSelectSlot,
@@ -40,156 +90,88 @@ export const MinecraftHotbar: React.FC<MinecraftHotbarProps> = ({
 }) => {
   const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
 
-  const slots: HotbarItem[] = [
+  // Dynamic Item List: ONLY display items the player currently owns, starting with slot 0 (Empty Hands)
+  const items: HotbarItem[] = [
     {
-      id: "chiya",
-      name: "Masala Chiya",
-      nepaliName: "मसाला चिया",
-      icon: "☕",
-      count: chiyaCount,
-      actionLabel: "Sip Chiya",
-      canUse: chiyaCount > 0,
-      description: "Hot spiced tea brewed with cloves and cardamom. Grants +Speed boost!",
-    },
-    {
-      id: "sel_roti",
-      name: "Sel Roti",
-      nepaliName: "सेल रोटी",
-      icon: "🍩",
-      count: selRotiCount,
-      actionLabel: "Eat Sel Roti",
-      canUse: selRotiCount > 0,
-      description: "Traditional sweet crispy rice bread fried in pure ghee. Awards +25 Points!",
-    },
-    {
-      id: "changa",
-      name: "Changa & Lattai",
-      nepaliName: "चङ्गा र लट्टाई",
-      icon: "🪁",
-      count: hasChanga ? 1 : 0,
-      actionLabel: isKiteFlying ? "Reel In Kite" : "Fly Changa",
-      canUse: hasChanga,
-      description: "Traditional diamond kite and bamboo string spool for flying in open fairgrounds.",
-    },
-    {
-      id: "dhaka_topi",
-      name: "Dhaka Topi",
-      nepaliName: "ढाका टोपी",
-      icon: "🎩",
-      count: hasDhakaTopi ? 1 : 0,
-      actionLabel: "Toggle Topi",
-      canUse: hasDhakaTopi,
-      description: "Traditional hand-woven Palpali geometric cap representing Mount Everest pride.",
-    },
-    {
-      id: "tika_jamara",
-      name: "Tika & Jamara",
-      nepaliName: "रातो टीका र जमरा",
-      icon: "🌸",
-      count: hasTika ? 1 : 0,
-      actionLabel: "View Blessing",
-      canUse: hasTika,
-      description: "Sacred Dashain red rice Akshata and golden-green Jamara sprigs from village elders.",
-    },
-    {
-      id: "diya",
-      name: "Tihar Diya",
-      nepaliName: "माटोको पाला",
-      icon: "🪔",
-      count: 1,
-      actionLabel: "Light Lamp",
+      id: "bare_hands",
+      name: "Empty Hands",
+      nepaliName: "खाली हात",
+      renderIcon: Icons.Hand,
+      count: 0,
+      actionLabel: "Unequip Item",
       canUse: true,
-      description: "Clay oil lamp lit during Deepawali / Tihar to welcome Goddess Lakshmi.",
-    },
-    {
-      id: "tash",
-      name: "Dashain Tash",
-      nepaliName: "तास / बाघचाल",
-      icon: "🃏",
-      count: 1,
-      actionLabel: "Play Cards",
-      canUse: true,
-      description: "Traditional Dashain gathering card games (Marriage, Teen Patti & Kitti).",
+      description: "Default free hands mode. Ready to explore, jump, ride the swing, or clap.",
     },
   ];
 
-  // Number Keys 1-7 and Use key (F)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't capture when typing in chat
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  if (chiyaCount > 0) {
+    items.push({
+      id: "chiya",
+      name: "Masala Chiya",
+      nepaliName: "मसाला चिया",
+      renderIcon: Icons.Chiya,
+      count: chiyaCount,
+      actionLabel: "Sip Chiya",
+      canUse: true,
+      description: "Hot spiced tea brewed with cloves and cardamom. Grants +Speed boost!",
+    });
+  }
 
-      const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= slots.length) {
-        onSelectSlot(num - 1);
-      } else if (e.code === "KeyF") {
-        const item = slots[selectedSlot];
-        if (item && item.canUse) {
-          onUseItem(item.id);
-        }
-      }
-    };
+  if (selRotiCount > 0) {
+    items.push({
+      id: "sel_roti",
+      name: "Sel Roti",
+      nepaliName: "सेल रोटी",
+      renderIcon: Icons.SelRoti,
+      count: selRotiCount,
+      actionLabel: "Eat Sel Roti",
+      canUse: true,
+      description: "Crispy traditional Dashain sweet bread fried in pure ghee. Grants points!",
+    });
+  }
 
-    const handleWheel = (e: WheelEvent) => {
-      // Only capture when mouse is near bottom
-      if (e.clientY > window.innerHeight - 120) {
-        if (e.deltaY > 0) {
-          onSelectSlot((selectedSlot + 1) % slots.length);
-        } else if (e.deltaY < 0) {
-          onSelectSlot((selectedSlot - 1 + slots.length) % slots.length);
-        }
-      }
-    };
+  if (hasChanga) {
+    items.push({
+      id: "changa",
+      name: "Dashain Changa",
+      nepaliName: "चङ्गा र लट्टाई",
+      renderIcon: Icons.Kite,
+      count: 1,
+      actionLabel: isKiteFlying ? "Reel In Kite" : "Fly Changa",
+      canUse: true,
+      description: "Traditional diamond kite and bamboo spool. Fly high in the clear blue sky!",
+    });
+  }
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("wheel", handleWheel);
-    };
-  }, [selectedSlot, slots, onSelectSlot, onUseItem]);
+  if (hasDhakaTopi) {
+    items.push({
+      id: "dhaka_topi",
+      name: "Dhaka Topi",
+      nepaliName: "ढाका टोपी",
+      renderIcon: Icons.DhakaTopi,
+      count: 1,
+      actionLabel: "Toggle Topi",
+      canUse: true,
+      description: "Traditional hand-woven Palpali geometric cap representing Nepali pride.",
+    });
+  }
 
-  const activeItem = slots[selectedSlot];
-  const displayedTooltip = hoveredSlot !== null ? slots[hoveredSlot] : activeItem;
+  if (hasTika) {
+    items.push({
+      id: "tika_jamara",
+      name: "Tika & Jamara",
+      nepaliName: "रातो टीका र जमरा",
+      renderIcon: Icons.Tika,
+      count: 1,
+      actionLabel: "Blessed",
+      canUse: false,
+      description: "Sacred Dashain red rice Akshata and golden-green Jamara sprigs from village elders.",
+    });
+  }
 
-  const getInteractionPrompt = (type: string | null) => {
-    switch (type) {
-      case "ping":
-        return { label: "🎋 [E] Ride Linge Ping (Bamboo Swing)", color: "#f59e0b" };
-      case "chautari":
-        return { label: "🪑 [E] Sit at Central Chautari under Banyan Tree", color: "#ca8a04" };
-      case "langur":
-        return { label: "🎲 [E] Play Langur Burja Dice Game", color: "#10b981" };
-      case "taas":
-        return { label: "🃏 [E] Sit in Forest Taas Circle", color: "#6366f1" };
-      case "diya":
-        return { label: "🕯️ [E] Light Ceremonial Tihar Diya", color: "#f97316" };
-      case "tika1":
-        return { label: "🌸 [E] Bada Dashain Mula Ghar (Elder Blessing)", color: "#ef4444" };
-      case "tika2":
-        return { label: "🌸 [E] Maiti Ghar Courtyard (Elder Blessing)", color: "#ec4899" };
-      case "aama_samuha":
-        return { label: "💃 [E] Sit & Celebrate with Aama Samuha", color: "#f59e0b" };
-      case "mandir":
-        return { label: "🛕 [E] Offer Prayers at Durga Mata Mandir", color: "#facc15" };
-      case "dan_peti":
-        return { label: "🪙 [E] Open Dan Peti (दान पेटिका)", color: "#eab308" };
-      case "sanstha":
-        return { label: "🏛️ [E] Mela Samiti Office / Inquire Updates (सचिवालय)", color: "#06b6d4" };
-      case "chiya":
-        return { label: "☕ [E] Ramesh Dai's Chiya Pasal (रू २०)", color: "#d97706" };
-      case "sel_roti":
-        return { label: "🍩 [E] Sita Didi's Sel Roti Stall (रू ३०)", color: "#0d9488" };
-      case "changa":
-        return { label: "🪁 [E] Bikash's Kite & Lattai Shop (रू ५०)", color: "#0284c7" };
-      case "dhaka":
-        return { label: "🎩 [E] Pooja Didi's Dhaka Topi Stall (रू ८०)", color: "#854d0e" };
-      default:
-        return null;
-    }
-  };
-
-  const prompt = getInteractionPrompt(nearbyInteraction);
+  // Ensure selected slot stays within valid range
+  const currentSlotIndex = Math.min(selectedSlot, items.length - 1);
+  const activeItem = items[currentSlotIndex] ?? items[0];
 
   return (
     <div
@@ -198,171 +180,141 @@ export const MinecraftHotbar: React.FC<MinecraftHotbarProps> = ({
         bottom: 16,
         left: "50%",
         transform: "translateX(-50%)",
+        zIndex: 120,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "8px",
-        zIndex: 150,
-        pointerEvents: "none",
+        gap: "6px",
+        pointerEvents: "auto",
         userSelect: "none",
       }}
     >
-      {/* ─── Context-Sensitive Interaction Prompt (Phase 1) ────────────────── */}
-      {prompt && (
-        <button
-          onClick={onInteract}
-          style={{
-            pointerEvents: "auto",
-            backgroundColor: "rgba(24, 18, 14, 0.94)",
-            border: `2px solid ${prompt.color}`,
-            borderRadius: "20px",
-            padding: "8px 20px",
-            color: "#fef08a",
-            fontWeight: 900,
-            fontSize: "13px",
-            cursor: "pointer",
-            boxShadow: `0 6px 20px rgba(0,0,0,0.6), 0 0 14px ${prompt.color}44`,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "transform 0.15s ease, box-shadow 0.15s ease",
-            animation: "pulse 2s infinite ease-in-out",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
-        >
-          {prompt.label}
-        </button>
-      )}
-
-      {/* ─── Active Slot Tooltip ───────────────────────────────────────────── */}
-      {displayedTooltip && (
+      {/* Active Item Description Tooltip */}
+      {activeItem && (
         <div
           style={{
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            backdropFilter: "blur(6px)",
-            border: "1px solid rgba(245, 158, 11, 0.5)",
-            borderRadius: "10px",
+            background: "rgba(15, 23, 42, 0.92)",
+            border: "1px solid rgba(250, 204, 21, 0.4)",
+            borderRadius: "12px",
             padding: "4px 12px",
-            color: "#FDE047",
+            color: "#FEF08A",
             fontSize: "11px",
             fontWeight: 800,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
             gap: "8px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-            pointerEvents: "none",
           }}
         >
-          <span>{displayedTooltip.icon} {displayedTooltip.name} ({displayedTooltip.nepaliName})</span>
-          {displayedTooltip.canUse && (
-            <span style={{ color: "#38bdf8", fontSize: "10px", fontWeight: 700 }}>
-              • Press [F] or Click to {displayedTooltip.actionLabel}
-            </span>
+          <span>{activeItem.nepaliName}</span>
+          <span style={{ color: "#94A3B8", fontWeight: 600 }}>({activeItem.name})</span>
+          {activeItem.canUse && activeItem.id !== "bare_hands" && (
+            <button
+              onClick={() => onUseItem(activeItem.id)}
+              style={{
+                background: "linear-gradient(135deg, #059669 0%, #0D9488 100%)",
+                border: "1px solid #34D399",
+                borderRadius: "6px",
+                padding: "2px 8px",
+                color: "#FFF",
+                fontSize: "10px",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              {activeItem.actionLabel}
+            </button>
           )}
         </div>
       )}
 
-      {/* ─── Minecraft-Style Hotbar Row (Phase 2) ──────────────────────────── */}
+      {/* Dynamic Hotbar Slots */}
       <div
         style={{
           display: "flex",
-          gap: "4px",
-          backgroundColor: "rgba(18, 12, 8, 0.92)",
-          backdropFilter: "blur(8px)",
-          padding: "6px",
-          borderRadius: "14px",
-          border: "2px solid rgba(180, 83, 9, 0.5)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.1)",
-          pointerEvents: "auto",
+          gap: "6px",
+          background: "rgba(18, 18, 24, 0.88)",
+          backdropFilter: "blur(14px)",
+          border: "2px solid rgba(250, 204, 21, 0.35)",
+          borderRadius: "16px",
+          padding: "6px 8px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.75)",
         }}
       >
-        {slots.map((item, idx) => {
-          const isSelected = selectedSlot === idx;
-          const isOwned = item.count > 0;
+        {items.map((item, index) => {
+          const isSelected = index === currentSlotIndex;
+          const isHovered = hoveredSlot === index;
 
           return (
             <div
               key={item.id}
               onClick={() => {
-                if (isSelected && item.canUse) {
-                  onUseItem(item.id);
-                } else {
-                  onSelectSlot(idx);
-                }
+                onSelectSlot(index);
+                onUseItem(item.id);
               }}
-              onMouseEnter={() => setHoveredSlot(idx)}
+              onMouseEnter={() => setHoveredSlot(index)}
               onMouseLeave={() => setHoveredSlot(null)}
               style={{
-                width: "52px",
-                height: "52px",
-                position: "relative",
-                backgroundColor: isSelected ? "rgba(245, 158, 11, 0.22)" : "rgba(35, 24, 18, 0.75)",
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: isSelected
+                  ? "linear-gradient(135deg, rgba(185, 28, 28, 0.6) 0%, rgba(217, 119, 6, 0.6) 100%)"
+                  : isHovered
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "rgba(30, 41, 59, 0.65)",
                 border: isSelected
                   ? "2px solid #FCD34D"
-                  : "2px solid rgba(80, 50, 30, 0.6)",
-                borderRadius: "10px",
+                  : "1.5px solid rgba(255, 255, 255, 0.15)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                boxShadow: isSelected
-                  ? "0 0 12px rgba(251, 191, 36, 0.5), inset 0 0 6px rgba(251, 191, 36, 0.3)"
-                  : "inset 0 2px 4px rgba(0,0,0,0.4)",
-                transition: "all 0.12s ease",
-                transform: isSelected ? "translateY(-4px)" : "none",
-                opacity: isOwned ? 1 : 0.35,
+                position: "relative",
+                transition: "all 0.15s ease",
+                transform: isSelected ? "scale(1.08)" : "scale(1)",
+                boxShadow: isSelected ? "0 4px 14px rgba(250, 204, 21, 0.35)" : "none",
               }}
+              title={`${item.name} [${index + 1}]`}
             >
-              {/* Slot Number Indicator (1-7) */}
+              {/* Slot Number Keybind (1, 2, 3...) */}
               <span
                 style={{
                   position: "absolute",
-                  top: 2,
-                  left: 4,
+                  top: "2px",
+                  left: "5px",
                   fontSize: "9px",
-                  fontWeight: 800,
-                  color: isSelected ? "#FDE047" : "#94A3B8",
+                  fontWeight: 900,
+                  color: isSelected ? "#FDE047" : "#64748B",
                 }}
               >
-                {idx + 1}
+                {index + 1}
               </span>
 
-              {/* Item Icon */}
-              <span style={{ fontSize: "24px", filter: isOwned ? "none" : "grayscale(80%)" }}>
-                {item.icon}
-              </span>
+              {/* Vector Icon */}
+              <div style={{ marginTop: "2px" }}>
+                {item.renderIcon()}
+              </div>
 
-              {/* Stack Quantity Badge */}
+              {/* Item Count Badge if > 1 */}
               {item.count > 1 && (
                 <span
                   style={{
                     position: "absolute",
-                    bottom: 2,
-                    right: 4,
-                    fontSize: "11px",
+                    bottom: "2px",
+                    right: "4px",
+                    fontSize: "10px",
                     fontWeight: 900,
-                    color: "#FFFFFF",
-                    textShadow: "1px 1px 2px #000, -1px -1px 2px #000",
+                    color: "#FFF",
+                    background: "#0284C7",
+                    borderRadius: "4px",
+                    padding: "0 4px",
+                    lineHeight: "1.2",
                   }}
                 >
                   {item.count}
                 </span>
-              )}
-
-              {/* Active Selection Indicator */}
-              {isSelected && (
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: -3,
-                    width: "16px",
-                    height: "3px",
-                    backgroundColor: "#FCD34D",
-                    borderRadius: "2px",
-                  }}
-                />
               )}
             </div>
           );

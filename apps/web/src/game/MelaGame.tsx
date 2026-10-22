@@ -151,6 +151,12 @@ export const MelaGame: React.FC = () => {
   const [virtualJump, setVirtualJump] = useState<boolean>(false);
   const [cameraRotateStep, setCameraRotateStep] = useState<number>(0);
 
+  // Sync player device mode (mobile / pc) to customization & multiplayer state
+  useEffect(() => {
+    const dev: "mobile" | "pc" = showMobileControls ? "mobile" : "pc";
+    setCustomization((prev) => (prev.device === dev ? prev : { ...prev, device: dev }));
+  }, [showMobileControls]);
+
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 

@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { CharacterAvatar } from "./CharacterAvatar.js";
 import { soundManager } from "../audio/SoundManager.js";
+import { getTerrainHeight, checkStructureCollision } from "../world/terrainMath.js";
 import { MOVEMENT_LIMITS, ATTRACTION_LOCATIONS } from "@melaverse/shared";
 import type { AnimationState, AvatarCustomization, EmoteType } from "@melaverse/shared";
 
@@ -88,45 +89,44 @@ function distToSegment(px: number, pz: number, x1: number, z1: number, x2: numbe
   return Math.hypot(px - (x1 + t * (x2 - x1)), pz - (z1 + t * (z2 - z1)));
 }
 
-/** Calculates walkable 3D stair and platform surface heights */
+/** Calculates walkable 3D stair, terraced hill, and platform surface heights */
 function getSurfaceHeight(x: number, z: number): number {
-  // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple at [0, 0, -46])
-  if (Math.abs(x) < 2.5) {
-    if (z <= -37.2 && z > -38.5) return 0.22; // Step 1
-    if (z <= -38.5 && z > -39.7) return 0.48; // Step 2
-    if (z <= -39.7 && z > -40.8) return 0.76; // Step 3
-    if (z <= -40.8 && z >= -44.5) return 1.0;  // Temple Front Plinth
+  const hillHeight = getTerrainHeight(x, z);
+
+  // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -42])
+  if (Math.abs(x) < 3.4 && z <= -26.5 && z >= -37.5) {
+    const stepIdx = Math.floor((-26.5 - z) / 1.75);
+    return Math.min(2.5, 0.25 + stepIdx * 0.35);
   }
-  // Temple Plinth side steps
-  if (Math.abs(x) < 6.2 && z <= -41.0 && z >= -50.5) {
-    return 1.0; // Plinth surface
+  if (Math.abs(x) < 13 && z <= -37.5 && z >= -52) {
+    return 2.5; // Mandir Hill top plinth
   }
 
   // 2. Central Chautari Stone Benches & Steps (Center at [0, 5])
   const chautariDist = Math.hypot(x, z - 5);
   if (chautariDist < 4.4 && chautariDist >= 2.9) {
-    return 0.48; // Lower stone tier bench
+    return hillHeight + 0.48; // Lower stone tier bench
   }
   if (chautariDist < 2.9 && chautariDist >= 1.1) {
-    return 0.94; // Upper stone tier terrace
+    return hillHeight + 0.94; // Upper stone tier terrace
   }
 
   // 3. Dashain Tika House 1 Porch (Mula Ghar at [-28, -35])
   if (x >= -31.5 && x <= -24.5 && z >= -32.5 && z <= -29.2) {
-    return 0.35; // Front porch
+    return hillHeight + 0.35; // Front porch
   }
 
   // 4. Dashain Tika House 2 Porch (Maiti Ghar at [28, -35])
   if (x >= 24.5 && x <= 31.5 && z >= -32.5 && z <= -29.2) {
-    return 0.35; // Front porch
+    return hillHeight + 0.35; // Front porch
   }
 
   // 5. Aama Samuha Dance Platform Steps (Stage at [26, 22])
   if (x >= 21.0 && x <= 31.0 && z >= 18.0 && z <= 25.8) {
-    return 0.8; // Raised wooden stage
+    return hillHeight + 0.8; // Raised wooden stage
   }
 
-  return 0.0; // Ground level
+  return hillHeight;
 }
 
 export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
@@ -184,7 +184,14 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
   // Setup keyboard & mouse listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.tagName === "INPUT") return;
+      if ((e.ctrlKey || e.metaKey) && e.key?.toLowerCase() === "a") {
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+          e.preventDefault();
+          return;
+        }
+      }
+      if ((e.target as HTMLElement)?.tagName === "INPUT" || (e.target as HTMLElement)?.tagName === "TEXTAREA") return;
       keysRef.current[e.code] = true;
       // Start music on first player interaction
       soundManager.ensureAudio();
@@ -664,9 +671,9 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
         canMove = false;
       }
 
-      // Perimeter boundary check
+      // Perimeter boundary & structure wall collision checks
       const distFromCenter = Math.hypot(nextX, nextZ);
-      if (distFromCenter > 46) {
+      if (distFromCenter > 48 || checkStructureCollision(nextX, nextZ, 0.42)) {
         canMove = false;
       }
 

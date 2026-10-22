@@ -274,6 +274,23 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         });
       }
     }
+    // Animate stage cultural dancers (bots dancing on stage, while audience seating is for real players)
+    if (dancersRef.current) {
+      dancersRef.current.children.forEach((dancer, idx) => {
+        if (idx === 0) {
+          dancer.rotation.y = Math.sin(t * 2.2) * 0.45;
+          dancer.position.y = Math.abs(Math.sin(t * 4.4)) * 0.12;
+          dancer.rotation.z = Math.sin(t * 2.2) * 0.08;
+        } else if (idx === 1) {
+          dancer.position.y = Math.max(0, Math.sin(t * 5.5)) * 0.18;
+          dancer.rotation.z = Math.sin(t * 5.5) * 0.10;
+          dancer.rotation.y = Math.cos(t * 2.0) * 0.35;
+        } else {
+          dancer.position.y = Math.abs(Math.sin(t * 4.2)) * 0.12;
+          dancer.rotation.y = Math.sin(t * 1.8) * 0.32;
+        }
+      });
+    }
   });
 
   return (
@@ -304,6 +321,54 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         <planeGeometry args={[80, 80]} />
         <meshStandardMaterial color="#3E6B32" roughness={0.9} />
       </mesh>
+
+      {/* ─── Elevated Mandir Hill Mounds & Terraces (पहाडी ढिस्को र खुड्किलाहरू) ─── */}
+      {/* Lower Terraced Hill Plinth under Temple */}
+      <mesh position={[0, 0.45, -42]} receiveShadow>
+        <cylinderGeometry args={[18, 22, 1.0, 32]} />
+        <meshStandardMaterial color="#4A6B36" roughness={0.9} />
+      </mesh>
+      {/* Upper Stone Hill Tier */}
+      <mesh position={[0, 1.35, -42]} receiveShadow>
+        <cylinderGeometry args={[13, 16, 0.9, 32]} />
+        <meshStandardMaterial color="#78350F" roughness={0.85} />
+      </mesh>
+      {/* Grand Ceremonial Stone Steps leading up to the Mandir Hill */}
+      {[
+        { y: 0.15, z: -27.5, width: 6.5, depth: 1.8 },
+        { y: 0.45, z: -29.2, width: 6.2, depth: 1.8 },
+        { y: 0.75, z: -30.9, width: 5.9, depth: 1.8 },
+        { y: 1.05, z: -32.6, width: 5.6, depth: 1.8 },
+        { y: 1.35, z: -34.3, width: 5.3, depth: 1.8 },
+        { y: 1.65, z: -36.0, width: 5.0, depth: 1.8 },
+      ].map((step, idx) => (
+        <mesh key={`mandir-hill-step-${idx}`} position={[0, step.y, step.z]} receiveShadow castShadow>
+          <boxGeometry args={[step.width, 0.3, step.depth]} />
+          <meshStandardMaterial color="#B45309" roughness={0.75} />
+        </mesh>
+      ))}
+
+      {/* Perimeter Rustic Wooden Fencing enclosing the mela ground */}
+      {[-48, 48].map((x) => (
+        <group key={`side-fence-${x}`}>
+          {[-45, -30, -15, 0, 15, 30, 45].map((z) => (
+            <group key={`fence-post-${x}-${z}`} position={[x, 0.7, z]}>
+              <mesh castShadow>
+                <cylinderGeometry args={[0.08, 0.1, 1.4, 8]} />
+                <meshStandardMaterial color="#451A03" roughness={0.8} />
+              </mesh>
+              <mesh position={[0, 0.25, 7.5]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.04, 0.04, 15, 6]} />
+                <meshStandardMaterial color="#78350F" roughness={0.8} />
+              </mesh>
+              <mesh position={[0, -0.2, 7.5]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.04, 0.04, 15, 6]} />
+                <meshStandardMaterial color="#78350F" roughness={0.8} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+      ))}
 
       {/* Central Courtyard & Paths (Terracotta Cobblestone Paving) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 5]} receiveShadow>
@@ -957,11 +1022,39 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
             </mesh>
           </group>
 
-          {/* Center Stage Performance Area for Real Players */}
+          {/* Center Stage Performance Area for Real Players & Cultural Dancers */}
           <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[2.2, 24]} />
+            <circleGeometry args={[2.5, 24]} />
             <meshStandardMaterial color="#991B1B" roughness={0.75} />
           </mesh>
+        </group>
+
+        {/* 3 Dedicated Cultural Dancers on Stage (Bots Dancing in Center, while Sitting Area is for Real Players) */}
+        <group ref={dancersRef} position={[0, 0.8, 0]}>
+          {/* 1. Radhika Didi - Maruni Dance */}
+          <group position={[-1.5, 0, 0.2]}>
+            <CharacterAvatar
+              displayName="Radhika Didi (मारुनी)"
+              animState="nach"
+              customization={{ color: "#DC2626", vestColor: "#EAB308", hasDhakaTopi: false, skinTone: "#D49B6A", device: "pc" }}
+            />
+          </group>
+          {/* 2. Sita Didi - Kauda Rhythm Dance */}
+          <group position={[0, 0, 0.6]}>
+            <CharacterAvatar
+              displayName="Sita Didi (कौडा)"
+              animState="swaying_dance"
+              customization={{ color: "#0284C7", vestColor: "#F59E0B", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
+            />
+          </group>
+          {/* 3. Parvati Aama - Deusi-Bhailo Dance */}
+          <group position={[1.5, 0, 0.2]}>
+            <CharacterAvatar
+              displayName="Parvati Aama (देउसी)"
+              animState="clapping_dance"
+              customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
+            />
+          </group>
         </group>
 
         {/* Stage Marigold Garlands & Ghili-Mili Fairy Lights */}
@@ -1788,7 +1881,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
 
       {/* ─── 12. Shree Durga Mata Mandir (Phase 8) ─────────────────────────── */}
       <DurgaMandir
-        position={[0, 0, -46]}
+        position={[0, 2.5, -42]}
         onPray={onPrayMandir}
         onOpenDanPeti={onOpenDanPeti}
         nearbyInteraction={nearbyInteraction}

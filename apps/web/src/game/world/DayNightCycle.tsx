@@ -71,46 +71,46 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
     let skyColor: THREE.Color;
     let sunColor: THREE.Color;
     let ambientColor: THREE.Color;
-    let sunIntensity = 1.6;
-    let ambientIntensity = 0.7;
+    let sunIntensity = 1.8;
+    let ambientIntensity = 0.85;
     let currentPhase: "morning" | "day" | "sunset" | "night" = "day";
     let isNight = false;
 
-    if (progress >= 0.0 && progress < 0.10) {
-      // 1. Morning / Dawn (~60s transition)
+    if (progress >= 0.0 && progress < 0.12) {
+      // 1. Morning / Dawn (~70s golden sunrise)
       currentPhase = "morning";
-      const sub = progress / 0.10;
-      skyColor = new THREE.Color().lerpColors(new THREE.Color("#1e1b4b"), new THREE.Color("#fed7aa"), sub);
-      sunColor = new THREE.Color("#f97316").lerp(new THREE.Color("#fde047"), sub);
-      ambientColor = new THREE.Color("#451a03").lerp(new THREE.Color("#78350f"), sub);
-      sunIntensity = THREE.MathUtils.lerp(0.3, 1.4, sub);
-      ambientIntensity = THREE.MathUtils.lerp(0.3, 0.7, sub);
-    } else if (progress >= 0.10 && progress < 0.45) {
-      // 2. Daytime / High Sun (~210s, total daytime ~270s = ~4.5 to 5 mins)
+      const sub = progress / 0.12;
+      skyColor = new THREE.Color().lerpColors(new THREE.Color("#312e81"), new THREE.Color("#fed7aa"), sub);
+      sunColor = new THREE.Color("#ea580c").lerp(new THREE.Color("#fde047"), sub);
+      ambientColor = new THREE.Color("#78350f").lerp(new THREE.Color("#fef3c7"), sub);
+      sunIntensity = THREE.MathUtils.lerp(0.9, 1.8, sub);
+      ambientIntensity = THREE.MathUtils.lerp(0.6, 0.9, sub);
+    } else if (progress >= 0.12 && progress < 0.68) {
+      // 2. Daytime / Brilliant Himalayan Sun (~340s vibrant festival sunlight)
       currentPhase = "day";
-      skyColor = new THREE.Color("#7dd3fc");
+      skyColor = new THREE.Color("#60a5fa"); // Vibrant clear mountain blue
       sunColor = new THREE.Color("#ffffff");
-      ambientColor = new THREE.Color("#ffffff");
-      sunIntensity = 1.6;
-      ambientIntensity = 0.8;
-    } else if (progress >= 0.45 && progress < 0.55) {
-      // 3. Sunset / Dusk (~60s twilight transition into night)
+      ambientColor = new THREE.Color("#fffbeb"); // Warm golden white
+      sunIntensity = 1.9;
+      ambientIntensity = 0.95;
+    } else if (progress >= 0.68 && progress < 0.82) {
+      // 3. Sunset / Golden Hour (~85s warm festival twilight)
       currentPhase = "sunset";
-      const sub = (progress - 0.45) / 0.10;
-      skyColor = new THREE.Color().lerpColors(new THREE.Color("#7dd3fc"), new THREE.Color("#991b1b"), sub);
-      sunColor = new THREE.Color("#fbbf24").lerp(new THREE.Color("#ea580c"), sub);
-      ambientColor = new THREE.Color("#fed7aa").lerp(new THREE.Color("#451a03"), sub);
-      sunIntensity = THREE.MathUtils.lerp(1.5, 0.4, sub);
-      ambientIntensity = THREE.MathUtils.lerp(0.8, 0.4, sub);
+      const sub = (progress - 0.68) / 0.14;
+      skyColor = new THREE.Color().lerpColors(new THREE.Color("#60a5fa"), new THREE.Color("#b91c1c"), sub);
+      sunColor = new THREE.Color("#fbbf24").lerp(new THREE.Color("#f97316"), sub);
+      ambientColor = new THREE.Color("#fef3c7").lerp(new THREE.Color("#78350f"), sub);
+      sunIntensity = THREE.MathUtils.lerp(1.8, 1.0, sub);
+      ambientIntensity = THREE.MathUtils.lerp(0.95, 0.7, sub);
     } else {
-      // 4. Night / Deepawali Starlight & Moon (~270s = ~4.5 to 5 mins)
+      // 4. Festive Tihar Evening & Moon (~100s illuminated night with warm ambient glow)
       currentPhase = "night";
       isNight = true;
-      skyColor = new THREE.Color("#090d16"); // Deep Himalayan night sky
-      sunColor = new THREE.Color("#93c5fd"); // Cool gentle moonlight
-      ambientColor = new THREE.Color("#1e1b4b");
-      sunIntensity = 0.45;
-      ambientIntensity = 0.35;
+      skyColor = new THREE.Color("#1e1b4b"); // Warm royal indigo night
+      sunColor = new THREE.Color("#bfdbfe"); // Soft silver moonlight
+      ambientColor = new THREE.Color("#3730a3"); // Illuminated ambient so it is NEVER pitch dark!
+      sunIntensity = 0.85;
+      ambientIntensity = 0.65;
     }
 
     // Apply colors to scene
@@ -119,10 +119,10 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
     if (dirLightRef.current) {
       if (isNight) {
         // Light originates from the Moon position at night
-        dirLightRef.current.position.set(moonX, Math.max(10, moonY), moonZ);
+        dirLightRef.current.position.set(moonX, Math.max(15, moonY), moonZ);
       } else {
         // Light originates from the Sun position during daytime
-        dirLightRef.current.position.set(sunX, Math.max(8, sunY), sunZ);
+        dirLightRef.current.position.set(sunX, Math.max(12, sunY), sunZ);
       }
       dirLightRef.current.color.copy(sunColor);
       dirLightRef.current.intensity = graphicsQuality === "low" ? sunIntensity * 0.8 : sunIntensity;
@@ -136,7 +136,7 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
     if (hemisphereLightRef.current) {
       hemisphereLightRef.current.color.copy(skyColor);
       hemisphereLightRef.current.groundColor.copy(ambientColor);
-      hemisphereLightRef.current.intensity = isNight ? 0.25 : 0.5;
+      hemisphereLightRef.current.intensity = isNight ? 0.45 : 0.75;
     }
 
     // Stars visibility and soft twinkling during night
@@ -148,13 +148,13 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
       }
     }
 
-    // Apply atmospheric distance fog matching sky color to optimize rendering & soften distant horizons
+    // Clear, open atmospheric distance fog
     if (!scene.fog) {
-      scene.fog = new THREE.Fog(skyColor, 35, 135);
+      scene.fog = new THREE.Fog(skyColor, 55, 175);
     } else {
       scene.fog.color.copy(skyColor);
-      (scene.fog as THREE.Fog).near = isNight ? 28 : 38;
-      (scene.fog as THREE.Fog).far = isNight ? 110 : 135;
+      (scene.fog as THREE.Fog).near = isNight ? 45 : 55;
+      (scene.fog as THREE.Fog).far = isNight ? 145 : 175;
     }
 
     if (currentPhase !== lastPhaseRef.current) {
