@@ -58,10 +58,9 @@ export const GhilimiliLights: React.FC<GhilimiliLightsProps> = ({ isNight }) => 
       }
     };
 
-    // 1. Durga Mata Mandir Entrance & Eaves (World Z around -46)
-    // Left & Right roof trim swags
-    addString([-4.2, 3.8, -43], [4.2, 3.8, -43], 9, 0.4);
-    addString([-4.2, 5.8, -44.5], [4.2, 5.8, -44.5], 7, 0.3);
+    // 1. Shree Durga Mata Mandir Entrance & Eaves (North Temple Hill at [0, 2.8, -75])
+    addString([-4.2, 6.6, -72], [4.2, 6.6, -72], 9, 0.4);
+    addString([-3.2, 8.6, -73.5], [3.2, 8.6, -73.5], 7, 0.3);
 
     // 2. Central Chautari Banyan Tree lower canopy ring (World [0, y, 5])
     const chautariRadius = 4.8;

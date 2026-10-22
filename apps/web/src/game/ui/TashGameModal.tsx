@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { soundManager } from "../audio/SoundManager.js";
 
+export interface RealTablePlayer {
+  id: string;
+  name: string;
+  avatar?: string;
+  color?: string;
+}
+
 interface TashGameModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,6 +16,8 @@ interface TashGameModalProps {
   playerName: string;
   taasPlayerCount: number;
   onPlayerCountChange: (count: number) => void;
+  realPlayers?: RealTablePlayer[];
+  isOnline?: boolean;
 }
 
 interface Card {
@@ -42,9 +51,16 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
   playerName,
   taasPlayerCount,
   onPlayerCountChange,
+  realPlayers = [],
+  isOnline = false,
 }) => {
   // Game Selector: "teen_patti" | "kitti" | "bagh_chal"
   const [selectedGame, setSelectedGame] = useState<"teen_patti" | "kitti" | "bagh_chal">("teen_patti");
+
+  // Real Multiplayer Seating
+  const seat1 = realPlayers[0] ?? null;
+  const seat2 = realPlayers[1] ?? null;
+  const seat3 = realPlayers[2] ?? null;
 
   // ─── Teen Patti State ──────────────────────────────────────────────────────
   const [phase, setPhase] = useState<"ready" | "dealt" | "showdown">("ready");
@@ -59,7 +75,7 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
   const [bot3Hand, setBot3Hand] = useState<Card[]>([]);
   const [winnerMessage, setWinnerMessage] = useState<string>("");
 
-  // ─── Bagh-Chal State (5x5 grid) ────────────────────────────────────────────
+  // ─── Bagh-Chal 2-Player Real Play State (5x5 grid) ──────────────────────────
   // 0: empty, 1: Goat, 2: Tiger
   const [baghBoard, setBaghBoard] = useState<number[][]>(() => {
     const b = Array.from({ length: 5 }, () => Array(5).fill(0));
@@ -76,10 +92,10 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
   const [selectedPiece, setSelectedPiece] = useState<{ r: number; c: number } | null>(null);
   const [baghMessage, setBaghMessage] = useState<string>("Place goats on empty intersections to trap the 4 tigers!");
 
-  const bots = [
-    { name: "Bishnu Dai", avatar: "👨", color: "#C41E3A" },
-    { name: "Sunita Didi", avatar: "👩", color: "#0D9488" },
-    { name: "Kiran Bhai", avatar: "🧒", color: "#2563EB" },
+  const seatedPlayers = [
+    seat1 ? { name: seat1.name, avatar: seat1.avatar || "👤", color: seat1.color || "#0D9488", isReal: true } : { name: "Seat 2 (Waiting)", avatar: "🪑", color: "#64748B", isReal: false },
+    seat2 ? { name: seat2.name, avatar: seat2.avatar || "👤", color: seat2.color || "#C41E3A", isReal: true } : { name: "Seat 3 (Waiting)", avatar: "🪑", color: "#64748B", isReal: false },
+    seat3 ? { name: seat3.name, avatar: seat3.avatar || "👤", color: seat3.color || "#2563EB", isReal: true } : { name: "Seat 4 (Waiting)", avatar: "🪑", color: "#64748B", isReal: false },
   ];
 
   const createDeck = (): Card[] => {
@@ -149,7 +165,7 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
     setPhase("showdown");
   };
 
-  // Showdown
+  // Showdown with real seated players
   const handleShowdown = () => {
     soundManager.playDiceRoll();
     const myEval = evaluateHandRank(playerHand);
@@ -158,11 +174,15 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
     const b3Eval = evaluateHandRank(bot3Hand);
 
     const scores = [
-      { name: playerName, eval: myEval, isPlayer: true },
-      { name: bots[0].name, eval: b1Eval, isPlayer: false },
-      { name: bots[1].name, eval: b2Eval, isPlayer: false },
-      { name: bots[2].name, eval: b3Eval, isPlayer: false },
+      { name: `${playerName} (You)`, eval: myEval, isPlayer: true },
     ];
+    if (seat1) scores.push({ name: seat1.name, eval: b1Eval, isPlayer: false });
+    if (seat2) scores.push({ name: seat2.name, eval: b2Eval, isPlayer: false });
+    if (seat3) scores.push({ name: seat3.name, eval: b3Eval, isPlayer: false });
+    // If practicing solo, evaluate against table dealer hand
+    if (scores.length === 1) {
+      scores.push({ name: "Practice Hand", eval: b1Eval, isPlayer: false });
+    }
 
     scores.sort((a, b) => b.eval.score - a.eval.score);
     const winner = scores[0];
@@ -181,109 +201,102 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
     setIsSeen(true);
   };
 
-  // ─── Bagh-Chal Logic (Traditional 5x5 board) ───────────────────────────────
+  // ─── 2-Player Real Bagh-Chal Logic (Traditional 5x5 board) ────────────────
   const handleBaghCellClick = (r: number, c: number) => {
-    if (turn !== "goat") return;
-
-    if (goatsToPlace > 0) {
-      // Place phase
-      if (baghBoard[r][c] === 0) {
-        soundManager.playCardSnap();
-        const nextB = baghBoard.map((row) => [...row]);
-        nextB[r][c] = 1; // Goat placed
-        setBaghBoard(nextB);
-        setGoatsToPlace((g) => g - 1);
-        setTurn("tiger");
-        setBaghMessage("Goat placed! Tigers are making their move...");
-        setTimeout(() => runTigerAI(nextB), 600);
+    // 1. GOAT'S TURN (Player 1)
+    if (turn === "goat") {
+      if (goatsToPlace > 0) {
+        // Place phase
+        if (baghBoard[r][c] === 0) {
+          soundManager.playCardSnap();
+          const nextB = baghBoard.map((row) => [...row]);
+          nextB[r][c] = 1; // Goat placed
+          setBaghBoard(nextB);
+          const remaining = goatsToPlace - 1;
+          setGoatsToPlace(remaining);
+          setTurn("tiger");
+          setBaghMessage(`Goat placed (${remaining} in hand)! Player 2 (Tiger)'s turn.`);
+        }
+      } else {
+        // Move phase for Goats
+        if (!selectedPiece && baghBoard[r][c] === 1) {
+          setSelectedPiece({ r, c });
+          setBaghMessage("Goat selected. Click adjacent empty point to move.");
+        } else if (selectedPiece && baghBoard[selectedPiece.r][selectedPiece.c] === 1) {
+          const dr = Math.abs(selectedPiece.r - r);
+          const dc = Math.abs(selectedPiece.c - c);
+          if (baghBoard[r][c] === 0 && dr <= 1 && dc <= 1) {
+            soundManager.playCardSnap();
+            const nextB = baghBoard.map((row) => [...row]);
+            nextB[selectedPiece.r][selectedPiece.c] = 0;
+            nextB[r][c] = 1;
+            setBaghBoard(nextB);
+            setSelectedPiece(null);
+            setTurn("tiger");
+            setBaghMessage("Goat moved! Player 2 (Tiger)'s turn.");
+          } else {
+            setSelectedPiece(null);
+          }
+        }
       }
-    } else {
-      // Move phase
-      if (!selectedPiece && baghBoard[r][c] === 1) {
+      return;
+    }
+
+    // 2. TIGER'S TURN (Player 2)
+    if (turn === "tiger") {
+      if (!selectedPiece && baghBoard[r][c] === 2) {
         setSelectedPiece({ r, c });
-      } else if (selectedPiece) {
-        const dr = Math.abs(selectedPiece.r - r);
-        const dc = Math.abs(selectedPiece.c - c);
+        setBaghMessage("Tiger selected. Click adjacent empty spot to move, or leap 2 steps over a goat to capture!");
+      } else if (selectedPiece && baghBoard[selectedPiece.r][selectedPiece.c] === 2) {
+        const sr = selectedPiece.r;
+        const sc = selectedPiece.c;
+        const dr = Math.abs(sr - r);
+        const dc = Math.abs(sc - c);
+
+        // Case A: 1-step move to adjacent empty spot
         if (baghBoard[r][c] === 0 && dr <= 1 && dc <= 1) {
           soundManager.playCardSnap();
           const nextB = baghBoard.map((row) => [...row]);
-          nextB[selectedPiece.r][selectedPiece.c] = 0;
-          nextB[r][c] = 1;
+          nextB[sr][sc] = 0;
+          nextB[r][c] = 2;
           setBaghBoard(nextB);
           setSelectedPiece(null);
-          setTurn("tiger");
-          setTimeout(() => runTigerAI(nextB), 600);
+          setTurn("goat");
+          setBaghMessage("Tiger moved! Player 1 (Goat)'s turn.");
+        }
+        // Case B: 2-step jump over an adjacent goat to capture
+        else if (
+          baghBoard[r][c] === 0 &&
+          ((dr === 2 && dc === 0) || (dr === 0 && dc === 2) || (dr === 2 && dc === 2))
+        ) {
+          const midR = (sr + r) / 2;
+          const midC = (sc + c) / 2;
+          if (baghBoard[midR][midC] === 1) {
+            // Valid capture jump!
+            soundManager.playMadalBeat("high");
+            const nextB = baghBoard.map((row) => [...row]);
+            nextB[sr][sc] = 0;
+            nextB[midR][midC] = 0; // Goat captured!
+            nextB[r][c] = 2;
+            const newCap = goatsCaptured + 1;
+            setGoatsCaptured(newCap);
+            setBaghBoard(nextB);
+            setSelectedPiece(null);
+            setTurn("goat");
+            if (newCap >= 5) {
+              soundManager.playWinFanfare();
+              setBaghMessage("Tigers win by capturing 5 goats! 🐅");
+            } else {
+              setBaghMessage(`Tiger captured a goat! (${newCap}/5 captured). Player 1 (Goat)'s turn.`);
+            }
+          } else {
+            setSelectedPiece(null);
+          }
         } else {
           setSelectedPiece(null);
         }
       }
     }
-  };
-
-  const runTigerAI = (board: number[][]) => {
-    const nextB = board.map((row) => [...row]);
-    let tigerMoved = false;
-
-    // 1. Check if any tiger can jump & capture a goat
-    for (let r = 0; r < 5; r++) {
-      if (tigerMoved) break;
-      for (let c = 0; c < 5; c++) {
-        if (nextB[r][c] === 2) {
-          const jumps = [
-            [-2, 0, -1, 0],
-            [2, 0, 1, 0],
-            [0, -2, 0, -1],
-            [0, 2, 0, 1],
-          ];
-          for (const [dr, dc, gr, gc] of jumps) {
-            const tr = r + dr;
-            const tc = c + dc;
-            const mr = r + gr;
-            const mc = c + gc;
-            if (tr >= 0 && tr < 5 && tc >= 0 && tc < 5 && nextB[tr][tc] === 0 && nextB[mr][mc] === 1) {
-              nextB[r][c] = 0;
-              nextB[mr][mc] = 0; // Capture goat!
-              nextB[tr][tc] = 2;
-              setGoatsCaptured((cap) => cap + 1);
-              soundManager.playMadalBeat("high");
-              tigerMoved = true;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    // 2. Otherwise regular move
-    if (!tigerMoved) {
-      for (let r = 0; r < 5; r++) {
-        if (tigerMoved) break;
-        for (let c = 0; c < 5; c++) {
-          if (nextB[r][c] === 2) {
-            const moves = [
-              [-1, 0],
-              [1, 0],
-              [0, -1],
-              [0, 1],
-            ];
-            for (const [dr, dc] of moves) {
-              const tr = r + dr;
-              const tc = c + dc;
-              if (tr >= 0 && tr < 5 && tc >= 0 && tc < 5 && nextB[tr][tc] === 0) {
-                nextB[r][c] = 0;
-                nextB[tr][tc] = 2;
-                tigerMoved = true;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    setBaghBoard(nextB);
-    setTurn("goat");
-    setBaghMessage(tigerMoved ? "Tiger moved! Your turn to place/move a goat." : "Tigers are trapped! You win!");
   };
 
   const resetBaghChal = () => {
@@ -421,10 +434,10 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
                 justifyContent: "space-between",
               }}
             >
-              {/* North Player (Sunita Didi) */}
+              {/* North Player (Seat 2) */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: bots[1].color }}>
-                  👩 {bots[1].name}
+                <span style={{ fontSize: "11px", fontWeight: 700, color: seatedPlayers[1].color }}>
+                  {seatedPlayers[1].avatar} {seatedPlayers[1].name}
                 </span>
                 <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
                   {bot2Hand.map((c, i) => (
@@ -451,10 +464,10 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
 
               {/* Middle Row */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                {/* West (Bishnu) */}
+                {/* West (Seat 1) */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: bots[0].color }}>
-                    👨 {bots[0].name}
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: seatedPlayers[0].color }}>
+                    {seatedPlayers[0].avatar} {seatedPlayers[0].name}
                   </span>
                   <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
                     {bot1Hand.map((c, i) => (
@@ -497,10 +510,10 @@ export const TashGameModal: React.FC<TashGameModalProps> = ({
                   <span style={{ fontSize: "16px", fontWeight: 900, color: "#fef08a" }}>🪙 {pot}</span>
                 </div>
 
-                {/* East (Kiran) */}
+                {/* East (Seat 3) */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: bots[2].color }}>
-                    🧒 {bots[2].name}
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: seatedPlayers[2].color }}>
+                    {seatedPlayers[2].avatar} {seatedPlayers[2].name}
                   </span>
                   <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
                     {bot3Hand.map((c, i) => (

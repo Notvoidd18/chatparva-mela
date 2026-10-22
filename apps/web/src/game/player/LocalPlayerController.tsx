@@ -50,7 +50,7 @@ const OBSTACLES = [
   { x: -28, z: -35, radius: 4.6 }, // Tika House 1 (Bada Dashain Mula Ghar)
   { x: 28, z: -35, radius: 4.6 }, // Tika House 2 (Maiti Ghar)
   { x: 26, z: 22, radius: 4.2 }, // Aama Samuha Stage
-  { x: 0, z: -47.5, radius: 3.5 }, // Temple Inner Sanctum (Front stairs at z=-38 to -41 are walkable)
+  { x: 0, z: -76.5, radius: 3.5 }, // Temple Inner Sanctum (Front stairs at z=-53 to -69 are completely walkable!)
   // Individual Pine Trees around Taas Grove
   { x: -32, z: 16, radius: 0.6 },
   { x: -24, z: 16, radius: 0.6 },
@@ -62,23 +62,8 @@ const OBSTACLES = [
   { x: 3.5, z: 42, radius: 0.9 },
 ];
 
-// Clean 2D Line segments [x1, z1, x2, z2] defining collidable boundary fences
-// No fences blocking any pathways or attractions!
-const FENCE_SEGMENTS: [number, number, number, number][] = [
-  // Village Market Street outer barriers behind the shops
-  [-9.5, 12, -9.5, 34],
-  [9.5, 12, 9.5, 34],
-
-  // Entrance Avenue flanking fences
-  [-4.8, 34, -4.8, 44],
-  [4.8, 34, 4.8, 44],
-
-  // North Promenade fences (flanking promenade, leaving Rangoli completely open!)
-  [-4.2, 0, -4.2, -16],
-  [4.2, 0, 4.2, -16],
-  [-4.2, -34, -4.2, -39],
-  [4.2, -34, 4.2, -39],
-];
+// Clean 2D Line segments [x1, z1, x2, z2] (Open festival layout — no fences blocking exploration)
+const FENCE_SEGMENTS: [number, number, number, number][] = [];
 
 // Helper to calculate shortest distance from point (px, pz) to line segment (x1, z1) -> (x2, z2)
 function distToSegment(px: number, pz: number, x1: number, z1: number, x2: number, z2: number): number {
@@ -691,16 +676,18 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
         }
       }
 
-      // Check stairs & elevation step-up limit (collidable stairs)
+      // Check stairs & elevation step-up limit (smoothly step up to 1.25m stairs/hills, blocks steep walls)
       const nextSurfaceHeight = getSurfaceHeight(nextX, nextZ);
-      if (nextSurfaceHeight - posRef.current.y > 0.55) {
-        // Step is too steep / high wall: collision!
+      if (nextSurfaceHeight - posRef.current.y > 1.25) {
         canMove = false;
       }
 
-      // Perimeter boundary & structure wall collision checks
-      const distFromCenter = Math.hypot(nextX, nextZ);
-      if (distFromCenter > 48 || checkStructureCollision(nextX, nextZ, 0.42)) {
+      // Perimeter boundary (expanded 250m x 250m world) & structure wall collision checks
+      if (
+        Math.abs(nextX) > 125 ||
+        Math.abs(nextZ) > 125 ||
+        checkStructureCollision(nextX, nextZ, 0.42)
+      ) {
         canMove = false;
       }
 

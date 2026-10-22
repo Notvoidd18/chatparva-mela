@@ -9,11 +9,13 @@ import { GhilimiliLights } from "./GhilimiliLights.js";
 import { getTerrainHeight } from "./terrainMath.js";
 
 const FESTIVE_DIYAS: [number, number, number][] = [
-  // Shree Durga Mata Mandir Steps & Entrance
-  [-2.2, 0.2, -41],
-  [2.2, 0.2, -41],
-  [-1.4, 0.5, -44],
-  [1.4, 0.5, -44],
+  // Shree Durga Mata Mandir Steps & Entrance (Temple Hill at [0, 2.8, -75])
+  [-2.2, 0.45, -54],
+  [2.2, 0.45, -54],
+  [-2.0, 1.45, -62],
+  [2.0, 1.45, -62],
+  [-1.6, 2.9, -70],
+  [1.6, 2.9, -70],
 
   // Central Chautari stone platform edges
   [3.2, 0.75, 5],
@@ -63,9 +65,13 @@ const LAMPPOST_POSITIONS: [number, number, number][] = [
   [-3.8, 0, -15],
   [3.8, 0, -15],
 
-  // North Promenade (After Rangoli, leading to Mandir steps)
+  // North Promenade (Leading to Mandir steps and hill)
   [-3.8, 0, -35],
   [3.8, 0, -35],
+  [-4.2, 0.4, -50],
+  [4.2, 0.4, -50],
+  [-4.0, 1.8, -64],
+  [4.0, 1.8, -64],
 
   // Pathways to Attractions
   [-14, 0, -3],
@@ -74,21 +80,8 @@ const LAMPPOST_POSITIONS: [number, number, number][] = [
   [20, 0, 18],
 ];
 
-const FENCE_SEGMENTS: [number, number, number, number][] = [
-  // Village Market Street outer barriers behind the shops
-  [-9.5, 12, -9.5, 34],
-  [9.5, 12, 9.5, 34],
-
-  // Entrance Avenue flanking fences
-  [-4.8, 34, -4.8, 44],
-  [4.8, 34, 4.8, 44],
-
-  // North Promenade fences (flanking promenade, leaving Rangoli completely open!)
-  [-4.2, 0, -4.2, -16],
-  [4.2, 0, 4.2, -16],
-  [-4.2, -34, -4.2, -39],
-  [4.2, -34, 4.2, -39],
-];
+// Clean layout without artificial path-blocking fences
+const FENCE_SEGMENTS: [number, number, number, number][] = [];
 
 const FenceLine: React.FC<{ x1: number; z1: number; x2: number; z2: number }> = ({ x1, z1, x2, z2 }) => {
   const dx = x2 - x1;
@@ -279,28 +272,11 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         });
       }
     }
-    // Animate stage cultural dancers (bots dancing on stage, while audience seating is for real players)
-    if (dancersRef.current) {
-      dancersRef.current.children.forEach((dancer, idx) => {
-        if (idx === 0) {
-          dancer.rotation.y = Math.sin(t * 2.2) * 0.45;
-          dancer.position.y = Math.abs(Math.sin(t * 4.4)) * 0.12;
-          dancer.rotation.z = Math.sin(t * 2.2) * 0.08;
-        } else if (idx === 1) {
-          dancer.position.y = Math.max(0, Math.sin(t * 5.5)) * 0.18;
-          dancer.rotation.z = Math.sin(t * 5.5) * 0.10;
-          dancer.rotation.y = Math.cos(t * 2.0) * 0.35;
-        } else {
-          dancer.position.y = Math.abs(Math.sin(t * 4.2)) * 0.12;
-          dancer.rotation.y = Math.sin(t * 1.8) * 0.32;
-        }
-      });
-    }
   });
 
   // Procedural 3D Terraced Landscape Mesh matching getTerrainHeight() exactly with biome vertex colors
   const terrainGeometry = useMemo(() => {
-    const geom = new THREE.PlaneGeometry(320, 320, 80, 80);
+    const geom = new THREE.PlaneGeometry(320, 320, 56, 56);
     geom.rotateX(-Math.PI / 2);
     const pos = geom.attributes.position;
     const colors = new Float32Array(pos.count * 3);
@@ -385,28 +361,6 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           <boxGeometry args={[step.width, 0.35, step.depth]} />
           <meshStandardMaterial color="#B45309" roughness={0.75} />
         </mesh>
-      ))}
-
-      {/* Perimeter Rustic Wooden Fencing enclosing the mela ground */}
-      {[-48, 48].map((x) => (
-        <group key={`side-fence-${x}`}>
-          {[-45, -30, -15, 0, 15, 30, 45].map((z) => (
-            <group key={`fence-post-${x}-${z}`} position={[x, 0.7, z]}>
-              <mesh castShadow>
-                <cylinderGeometry args={[0.08, 0.1, 1.4, 8]} />
-                <meshStandardMaterial color="#451A03" roughness={0.8} />
-              </mesh>
-              <mesh position={[0, 0.25, 7.5]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.04, 0.04, 15, 6]} />
-                <meshStandardMaterial color="#78350F" roughness={0.8} />
-              </mesh>
-              <mesh position={[0, -0.2, 7.5]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.04, 0.04, 15, 6]} />
-                <meshStandardMaterial color="#78350F" roughness={0.8} />
-              </mesh>
-            </group>
-          ))}
-        </group>
       ))}
 
       {/* Central Courtyard & Paths (Terracotta Cobblestone Paving) */}
@@ -1082,62 +1036,33 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
           </mesh>
         </group>
 
-        {/* Dedicated Cultural Dancers & Folk Musicians on Stage */}
+        {/* Dedicated Cultural Dancers & Folk Musicians on Stage (Optimized trio) */}
         <group ref={dancersRef} position={[0, 0.8, 0]}>
-          {/* 1. Radhika Didi - Sit-and-Stand Maruni Dance */}
-          <group position={[-2.4, 0, 0.2]}>
+          {/* 1. Parvati Aama - Graceful Sit-and-Stand Maruni Dance */}
+          <group position={[-1.6, 0, 0.2]}>
             <CharacterAvatar
-              displayName="Radhika Didi (मारुनी)"
+              displayName="Parvati Aama (मारुनी)"
               animState="nach"
               customization={{ color: "#DC2626", vestColor: "#EAB308", hasDhakaTopi: false, skinTone: "#D49B6A", device: "pc" }}
+              showNameTag={false}
             />
           </group>
-          {/* 2. Sita Didi - Kauda Rhythm Dance */}
-          <group position={[-1.2, 0, 0.6]}>
-            <CharacterAvatar
-              displayName="Sita Didi (कौडा)"
-              animState="swaying_dance"
-              customization={{ color: "#0284C7", vestColor: "#F59E0B", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
-            />
-          </group>
-          {/* 3. Parvati Aama - Deusi-Bhailo Dance */}
-          <group position={[0, 0, 0.3]}>
-            <CharacterAvatar
-              displayName="Parvati Aama (देउसी)"
-              animState="nach"
-              customization={{ color: "#15803D", vestColor: "#CA8A04", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
-            />
-          </group>
-          {/* 4. Laxmi Didi - Jhyaure Dance */}
-          <group position={[1.2, 0, 0.6]}>
+          {/* 2. Laxmi Didi - Cultural Deusi Folk Rhythm Dance */}
+          <group position={[0, 0, 0.4]}>
             <CharacterAvatar
               displayName="Laxmi Didi (झ्याउरे)"
               animState="clapping_dance"
               customization={{ color: "#D97706", vestColor: "#DC2626", hasDhakaTopi: false, skinTone: "#D49B6A", device: "pc" }}
+              showNameTag={false}
             />
           </group>
-          {/* 5. Mina Bainee - Tamang Selo Dance */}
-          <group position={[2.4, 0, 0.2]}>
-            <CharacterAvatar
-              displayName="Mina Bainee (सेलो)"
-              animState="nach"
-              customization={{ color: "#F43F5E", vestColor: "#38BDF8", hasDhakaTopi: false, skinTone: "#E0AC69", device: "pc" }}
-            />
-          </group>
-          {/* 6. Kancha Dai - Live Madal Player with 3D Madal Drum */}
-          <group position={[3.6, 0, -0.8]}>
+          {/* 3. Kancha Dai - Live Madal Percussionist */}
+          <group position={[1.8, 0, 0]}>
             <CharacterAvatar
               displayName="Kancha Dai (मादले)"
               animState="playing_madal"
               customization={{ color: "#374151", vestColor: "#991B1B", hasDhakaTopi: true, skinTone: "#C68642", device: "pc" }}
-            />
-          </group>
-          {/* 7. Bikram Bhai - Flute Player (मुरली वादक) */}
-          <group position={[-3.6, 0, -0.8]}>
-            <CharacterAvatar
-              displayName="Bikram Bhai (मुरली)"
-              animState="idle"
-              customization={{ color: "#1F2937", vestColor: "#CA8A04", hasDhakaTopi: true, skinTone: "#D49B6A", device: "pc" }}
+              showNameTag={false}
             />
           </group>
         </group>
@@ -2052,18 +1977,11 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
       </group>
 
       {/* ─── 16. Traditional Bamboo & Timber Pathway Fences (बाँसको बार) ───── */}
-      {/* Matched to physical collision segments; open perimeter around Rangoli */}
-      <group>
-        {FENCE_SEGMENTS.map(([x1, z1, x2, z2], idx) => (
-          <FenceLine key={`fence-seg-${idx}`} x1={x1} z1={z1} x2={x2} z2={z2} />
-        ))}
-      </group>
-
       {/* ─── 17. 3 Cultural Dance Circles across the Map (नाच मण्डलहरू) ───────── */}
       {[
         { id: "spot1_aama", name: "Aama Samuha Chautari Stage", x: 42, y: 0.02, z: 34 },
         { id: "spot2_bhailo", name: "Deusi Bhailo Village Plaza", x: -38, y: 0.02, z: 36 },
-        { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, y: 2.82, z: -58 },
+        { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, y: 2.82, z: -72 },
       ].map((spot) => {
         const isPlayerNear = isNear(spot.x, spot.z, 5.0);
         return (

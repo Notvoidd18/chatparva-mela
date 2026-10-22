@@ -467,8 +467,18 @@ export const MelaGame: React.FC = () => {
   const CULTURAL_DANCE_SPOTS = [
     { id: "spot1_aama", name: "Aama Samuha Chautari", x: 42, z: 34 },
     { id: "spot2_bhailo", name: "Deusi Bhailo Courtyard", x: -38, z: 36 },
-    { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, z: -58 },
+    { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, z: -72 },
   ];
+
+  // Real connected players list for live minigame tables
+  const onlinePlayersList = useMemo(() => {
+    return Array.from(remotePlayers.values()).map((p) => ({
+      id: p.sessionId,
+      name: p.displayName || "Festival Visitor",
+      avatar: p.customization?.avatarType?.startsWith("girl") ? "👧" : "👦",
+      color: p.customization?.color || "#2563EB",
+    }));
+  }, [remotePlayers]);
 
   const nearbyDanceSpot = CULTURAL_DANCE_SPOTS.find(
     (s) => Math.hypot(localPlayerPos.x - s.x, localPlayerPos.z - s.z) < 5.2
@@ -1537,6 +1547,8 @@ export const MelaGame: React.FC = () => {
         playerName={displayName}
         taasPlayerCount={taasPlayerCount}
         onPlayerCountChange={setTaasPlayerCount}
+        realPlayers={onlinePlayersList}
+        isOnline={isOnline}
       />
 
       {/* ─── Functional Market Stalls Modal (Phase 7) ────────────────────────── */}
