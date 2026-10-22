@@ -51,41 +51,46 @@ export interface CollisionBox {
 
 export const FESTIVAL_COLLIDERS: CollisionBox[] = [
   // 1. Elevated Mandir Temple Sanctum (Grand North Temple at z = -75)
-  { minX: -7.5, maxX: -1.6, minZ: -80, maxZ: -70, name: "mandir_west_wall" },
-  { minX: 1.6, maxX: 7.5, minZ: -80, maxZ: -70, name: "mandir_east_wall" },
-  { minX: -7.5, maxX: 7.5, minZ: -82, maxZ: -79, name: "mandir_back_wall" },
+  { minX: -5.5, maxX: -1.4, minZ: -78.5, maxZ: -71.5, name: "mandir_west_wall" },
+  { minX: 1.4, maxX: 5.5, minZ: -78.5, maxZ: -71.5, name: "mandir_east_wall" },
+  { minX: -5.5, maxX: 5.5, minZ: -79.5, maxZ: -77.5, name: "mandir_back_wall" },
 
-  // 2. Dashain Tika House 1: Bada Dashain Mula Ghar (Northwest hill at x = -45, z = -45)
-  { minX: -51, maxX: -39, minZ: -51, maxZ: -39, name: "tika_house_1" },
+  // 2. Dashain Tika House 1: Bada Dashain Mula Ghar (Northwest at x = -28, z = -35)
+  { minX: -32.5, maxX: -23.5, minZ: -39.0, maxZ: -33.5, name: "tika_house_1" },
 
-  // 3. Dashain Tika House 2: Maiti Ghar (Northeast hill at x = 45, z = -45)
-  { minX: 39, maxX: 51, minZ: -51, maxZ: -39, name: "tika_house_2" },
+  // 3. Dashain Tika House 2: Maiti Ghar (Northeast at x = 28, z = -35)
+  { minX: 23.5, maxX: 32.5, minZ: -39.0, maxZ: -33.5, name: "tika_house_2" },
 
-  // 4. Central Village Chautari Sacred Banyan Tree Trunk
-  { minX: -1.8, maxX: 1.8, minZ: -1.8, maxZ: 1.8, name: "chautari_banyan_trunk" },
+  // 4. Central Village Chautari Sacred Banyan Tree Trunk (at x = 0, z = 5)
+  { minX: -1.0, maxX: 1.0, minZ: 4.0, maxZ: 6.0, name: "chautari_banyan_trunk" },
 
-  // 5. Traditional Bamboo Linge Ping Posts (West Meadow at x = -55, z = -10)
-  { minX: -58.5, maxX: -51.5, minZ: -12.5, maxZ: -11.0, name: "ping_north_pillar" },
-  { minX: -58.5, maxX: -51.5, minZ: -9.0, maxZ: -7.5, name: "ping_south_pillar" },
+  // 5. Traditional Bamboo Linge Ping Posts (West Meadow at x = -26, z = -10)
+  { minX: -28.9, maxX: -27.9, minZ: -12.9, maxZ: -7.1, name: "ping_west_posts" },
+  { minX: -24.1, maxX: -23.1, minZ: -12.9, maxZ: -7.1, name: "ping_east_posts" },
 
-  // 6. Aama Samuha Gathering Stage (Southeast at x = 42, z = 24)
-  { minX: 36, maxX: 48, minZ: 19, maxZ: 26, name: "aama_stage_wall" },
+  // 6. Aama Samuha Gathering Stage Backdrop (Southeast at x = 26, z = 22)
+  { minX: 21.2, maxX: 30.8, minZ: 17.5, maxZ: 19.0, name: "aama_stage_backdrop" },
 
-  // 7. Langur Burja Dice Table Pavilion (Southwest at x = -38, z = 18)
-  { minX: -42, maxX: -34, minZ: 14, maxZ: 22, name: "langur_burja_pavilion" },
+  // 7. Langur Burja Dice Table Pavilion Center Table (at x = 24, z = -12)
+  { minX: 22.4, maxX: 25.6, minZ: -13.6, maxZ: -10.4, name: "langur_burja_table" },
 
-  // 8. Village Market Stalls (Spaced wide along the stone festival street)
-  { minX: -16, maxX: -10, minZ: 12, maxZ: 18, name: "chiya_tea_stall" },
-  { minX: 10, maxX: 16, minZ: 12, maxZ: 18, name: "sel_roti_stall" },
-  { minX: -16, maxX: -10, minZ: -8, maxZ: -2, name: "dhaka_topi_stall" },
-  { minX: 10, maxX: 16, minZ: -8, maxZ: -2, name: "changa_kite_stall" },
-  { minX: 20, maxX: 28, minZ: -4, maxZ: 2, name: "sanstha_desk" },
+  // 8. Village Market Stalls (Aligned along the stone festival street)
+  // Chiya Tea Stall (West at x = -6.5, z = 28)
+  { minX: -7.8, maxX: -5.2, minZ: 26.0, maxZ: 30.0, name: "chiya_tea_stall" },
+  // Sel Roti Stall (East at x = 6.5, z = 28)
+  { minX: 5.2, maxX: 7.8, minZ: 26.0, maxZ: 30.0, name: "sel_roti_stall" },
+  // Changa Kite Stall (West at x = -6.5, z = 18)
+  { minX: -7.8, maxX: -5.2, minZ: 16.0, maxZ: 20.0, name: "changa_kite_stall" },
+  // Dhaka Topi Stall (East at x = 6.5, z = 18)
+  { minX: 5.2, maxX: 7.8, minZ: 16.0, maxZ: 20.0, name: "dhaka_topi_stall" },
+  // Mela Byawasthapan Sanstha Desk (West at x = -9.5, z = 8)
+  { minX: -11.6, maxX: -7.4, minZ: 6.6, maxZ: 9.4, name: "sanstha_desk" },
 
-  // 9. Natural World Outer Bounds (Generous 240m x 240m exploration border — NO invisible fences in fairground!)
-  { minX: -122, maxX: 122, minZ: -118, maxZ: -115, name: "far_north_himalaya_cliff" },
-  { minX: -122, maxX: 122, minZ: 115, maxZ: 118, name: "far_south_valley_boundary" },
-  { minX: -122, maxX: -119, minZ: -118, maxZ: 118, name: "far_west_terrace_edge" },
-  { minX: 119, maxX: 122, minZ: -118, maxZ: 118, name: "far_east_terrace_edge" },
+  // 9. Natural World Outer Bounds (Generous 260m x 260m exploration border — NO invisible fences in fairground!)
+  { minX: -132, maxX: 132, minZ: -128, maxZ: -125, name: "far_north_himalaya_cliff" },
+  { minX: -132, maxX: 132, minZ: 125, maxZ: 128, name: "far_south_valley_boundary" },
+  { minX: -132, maxX: -129, minZ: -128, maxZ: 128, name: "far_west_terrace_edge" },
+  { minX: 129, maxX: 132, minZ: -128, maxZ: 128, name: "far_east_terrace_edge" },
 ];
 
 export function checkStructureCollision(x: number, z: number, radius: number = 0.55): boolean {

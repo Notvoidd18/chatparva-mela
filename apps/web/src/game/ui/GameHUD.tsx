@@ -54,7 +54,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   npr,
   tokens = 0,
   ping,
-  fps = 60,
   isOnline,
   connectionState,
   playerCount,
@@ -89,6 +88,27 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   currentServerId = "melaverse-server-1",
   onSwitchServer,
 }) => {
+  // Independent Real-time FPS Measurement (Zero canvas re-renders)
+  const [currentFps, setCurrentFps] = useState<number>(60);
+
+  useEffect(() => {
+    let animId: number;
+    let frames = 0;
+    let lastTime = performance.now();
+    const loop = () => {
+      frames++;
+      const now = performance.now();
+      const delta = now - lastTime;
+      if (delta >= 1000) {
+        setCurrentFps(Math.min(120, Math.round((frames * 1000) / delta)));
+        frames = 0;
+        lastTime = now;
+      }
+      animId = requestAnimationFrame(loop);
+    };
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, []);
   const [chatInput, setChatInput] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -250,13 +270,13 @@ export const GameHUD: React.FC<GameHUDProps> = ({
               padding: "4px 10px",
               fontSize: "11px",
               fontWeight: 800,
-              color: fps >= 50 ? "#4ADE80" : fps >= 30 ? "#FACC15" : "#F87171",
+              color: currentFps >= 50 ? "#4ADE80" : currentFps >= 30 ? "#FACC15" : "#F87171",
               boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
             }}
             title="Real-time Client Frame Rate"
           >
             <span style={{ fontSize: "10px" }}>⚡</span>
-            <span>{fps} FPS</span>
+            <span>{currentFps} FPS</span>
           </div>
         </div>
 

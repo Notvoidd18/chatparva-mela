@@ -148,13 +148,13 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
       }
     }
 
-    // Clear, open atmospheric distance fog
+    // Clear, open panoramic distance fog (Never clips mountains or terraced hills)
     if (!scene.fog) {
-      scene.fog = new THREE.Fog(skyColor, 55, 175);
+      scene.fog = new THREE.Fog(skyColor, 160, 520);
     } else {
       scene.fog.color.copy(skyColor);
-      (scene.fog as THREE.Fog).near = isNight ? 45 : 55;
-      (scene.fog as THREE.Fog).far = isNight ? 145 : 175;
+      (scene.fog as THREE.Fog).near = isNight ? 120 : 160;
+      (scene.fog as THREE.Fog).far = isNight ? 420 : 520;
     }
 
     if (currentPhase !== lastPhaseRef.current) {
@@ -165,7 +165,7 @@ export const DayNightCycle: React.FC<DayNightCycleProps> = ({
 
   return (
     <>
-      <fog attach="fog" args={["#7DD3FC", 38, 135]} />
+      <fog attach="fog" args={["#7DD3FC", 160, 520]} />
       <ambientLight ref={ambientLightRef} intensity={0.7} />
       <directionalLight
         ref={dirLightRef}

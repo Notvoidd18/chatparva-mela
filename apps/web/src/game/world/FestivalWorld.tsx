@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
@@ -6,6 +6,7 @@ import { INITIAL_DIYA_STATIONS } from "@melaverse/shared";
 import { CharacterAvatar } from "../player/CharacterAvatar.js";
 import { DurgaMandir } from "./DurgaMandir.js";
 import { GhilimiliLights } from "./GhilimiliLights.js";
+import { getTerrainHeight } from "./terrainMath.js";
 
 const FESTIVE_DIYAS: [number, number, number][] = [
   // Shree Durga Mata Mandir Steps & Entrance
@@ -297,33 +298,65 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
     }
   });
 
+  // Procedural 3D Terraced Landscape Mesh matching getTerrainHeight() exactly with biome vertex colors
+  const terrainGeometry = useMemo(() => {
+    const geom = new THREE.PlaneGeometry(320, 320, 80, 80);
+    geom.rotateX(-Math.PI / 2);
+    const pos = geom.attributes.position;
+    const colors = new Float32Array(pos.count * 3);
+
+    for (let i = 0; i < pos.count; i++) {
+      const vx = pos.getX(i);
+      const vz = pos.getZ(i);
+      const h = getTerrainHeight(vx, vz);
+      pos.setY(i, h);
+
+      // Procedural Nepali Biome vertex coloring
+      const isMustard = Math.abs(vx) > 55 && Math.abs(vx) < 115 && vz > -15 && vz < 55;
+      const isNorthHill = vz < -80;
+      const isVillage = Math.abs(vx) < 28 && vz > -45 && vz < 45;
+
+      let r = 0.24;
+      let g = 0.42;
+      let b = 0.20; // Default lush green meadow
+      if (isMustard) {
+        // Vibrant yellow blooming mustard field (पहेँलो तोरीबारी)
+        r = 0.80;
+        g = 0.70;
+        b = 0.06;
+      } else if (isVillage) {
+        // Fairground clay / earthen courtyard
+        r = 0.49;
+        g = 0.41;
+        b = 0.30;
+      } else if (isNorthHill) {
+        // High pine slopes
+        r = 0.18;
+        g = 0.35;
+        b = 0.15;
+      } else if (h > 1.2) {
+        // Terraced hillside transition
+        r = 0.29;
+        g = 0.48;
+        b = 0.22;
+      }
+
+      colors[i * 3] = r;
+      colors[i * 3 + 1] = g;
+      colors[i * 3 + 2] = b;
+    }
+
+    geom.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geom.computeVertexNormals();
+    return geom;
+  }, []);
+
   return (
     <group>
       {/* ─── Ground & Terrains (Expanded 320x320 Nepal Landscape) ─────────── */}
-      {/* Fairground earthen base */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
-        <planeGeometry args={[320, 320]} />
-        <meshStandardMaterial color="#7C684C" roughness={0.9} />
-      </mesh>
-
-      {/* Yellow Blooming Mustard Fields (पहेँलो तोरीबारी) in surrounding terraces */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-90, -0.04, 30]} receiveShadow>
-        <planeGeometry args={[80, 70]} />
-        <meshStandardMaterial color="#CBB310" roughness={0.85} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[90, -0.04, 30]} receiveShadow>
-        <planeGeometry args={[80, 70]} />
-        <meshStandardMaterial color="#CBB310" roughness={0.85} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[80, -0.04, -70]} receiveShadow>
-        <planeGeometry args={[80, 80]} />
-        <meshStandardMaterial color="#CBB310" roughness={0.85} />
-      </mesh>
-
-      {/* Lush Green Terraces */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-85, -0.04, -70]} receiveShadow>
-        <planeGeometry args={[80, 80]} />
-        <meshStandardMaterial color="#3E6B32" roughness={0.9} />
+      {/* Procedural 3D Terraced Hills, Valley & Mustard Fields (Visible & Collidable) */}
+      <mesh geometry={terrainGeometry} position={[0, -0.02, 0]} receiveShadow>
+        <meshStandardMaterial vertexColors roughness={0.92} />
       </mesh>
 
       {/* ─── Elevated Mandir Hill Mounds & Terraces (पहाडी ढिस्को र खुड्किलाहरू at z = -75) ─── */}
@@ -412,29 +445,34 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
 
-      {/* ─── Distant Nepal Scenery (Himalayan Giants & Rolling Hills) ──────── */}
-      <group position={[0, 0, -110]}>
-        <mesh position={[-75, 14, 0]}>
-          <coneGeometry args={[70, 36, 8]} />
-          <meshStandardMaterial color="#2E5A27" roughness={0.95} />
+      {/* ─── Distant Nepal Scenery (Himalayan Giants & Rolling Hills on Far Horizon) ─ */}
+      <group position={[0, 0, -260]}>
+        {/* Mid-Hill Green Ridges (Nepal Mahabharat range) */}
+        <mesh position={[-110, 26, -20]}>
+          <coneGeometry args={[95, 60, 8]} />
+          <meshStandardMaterial color="#23491E" roughness={0.95} />
         </mesh>
-        <mesh position={[0, 20, -20]}>
-          <coneGeometry args={[85, 45, 8]} />
-          <meshStandardMaterial color="#3E6B32" roughness={0.95} />
+        <mesh position={[0, 34, -40]}>
+          <coneGeometry args={[115, 75, 8]} />
+          <meshStandardMaterial color="#2F5C26" roughness={0.95} />
         </mesh>
-        <mesh position={[80, 16, 5]}>
-          <coneGeometry args={[70, 38, 8]} />
-          <meshStandardMaterial color="#2E5A27" roughness={0.95} />
+        <mesh position={[110, 28, -15]}>
+          <coneGeometry args={[95, 62, 8]} />
+          <meshStandardMaterial color="#23491E" roughness={0.95} />
         </mesh>
 
         {/* Snow-capped Himalayan Giants (Ganesh Himal / Langtang / Machhapuchhre) */}
-        <mesh position={[-45, 48, -45]}>
-          <coneGeometry args={[55, 75, 5]} />
+        <mesh position={[-70, 75, -80]}>
+          <coneGeometry args={[85, 150, 6]} />
           <meshStandardMaterial color="#FFFFFF" roughness={0.6} />
         </mesh>
-        <mesh position={[35, 55, -55]}>
-          <coneGeometry args={[65, 90, 5]} />
-          <meshStandardMaterial color="#F3F4F6" roughness={0.6} />
+        <mesh position={[60, 90, -100]}>
+          <coneGeometry args={[100, 180, 6]} />
+          <meshStandardMaterial color="#F8FAFC" roughness={0.6} />
+        </mesh>
+        <mesh position={[0, 105, -120]}>
+          <coneGeometry args={[115, 210, 6]} />
+          <meshStandardMaterial color="#FFFFFF" roughness={0.6} />
         </mesh>
       </group>
 
@@ -2048,7 +2086,10 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
               <meshStandardMaterial color="#FEF08A" roughness={0.5} />
             </mesh>
 
-            {/* Perimeter Festive Oil Lamps around the Dance Ring */}
+            {/* Single Gentle Center Lantern Glow per Dance Spot for Ultra-High Performance (replaces 24 redundant dynamic lights) */}
+            <pointLight color="#FF9F1C" intensity={0.6} distance={6} decay={2} position={[0, 0.4, 0]} />
+
+            {/* Perimeter Festive Oil Lamps around the Dance Ring (Emissive Flames) */}
             {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
               const angle = (i / 8) * Math.PI * 2;
               const dx = Math.cos(angle) * 3.6;
@@ -2063,7 +2104,6 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
                     <coneGeometry args={[0.04, 0.12, 6]} />
                     <meshBasicMaterial color="#FF9F1C" />
                   </mesh>
-                  <pointLight color="#FF9F1C" intensity={0.8} distance={3} decay={2} position={[0, 0.15, 0]} />
                 </group>
               );
             })}

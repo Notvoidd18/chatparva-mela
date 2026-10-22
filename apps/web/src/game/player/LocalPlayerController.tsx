@@ -93,13 +93,15 @@ function distToSegment(px: number, pz: number, x1: number, z1: number, x2: numbe
 function getSurfaceHeight(x: number, z: number): number {
   const hillHeight = getTerrainHeight(x, z);
 
-  // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -42])
-  if (Math.abs(x) < 3.4 && z <= -26.5 && z >= -37.5) {
-    const stepIdx = Math.floor((-26.5 - z) / 1.75);
-    return Math.min(2.5, 0.25 + stepIdx * 0.35);
+  // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -75])
+  // Steps lead up smoothly from z = -53 to -69
+  if (Math.abs(x) < 3.8 && z <= -53 && z >= -69) {
+    const stepIdx = Math.floor((-53 - z) / 2.0);
+    return Math.min(2.8, 0.25 + stepIdx * 0.35);
   }
-  if (Math.abs(x) < 13 && z <= -37.5 && z >= -52) {
-    return 2.5; // Mandir Hill top plinth
+  // Elevated Mandir Plateau Plinth
+  if (Math.abs(x) < 14 && z <= -69 && z >= -83) {
+    return 2.8;
   }
 
   // 2. Central Chautari Stone Benches & Steps (Center at [0, 5])
@@ -112,17 +114,17 @@ function getSurfaceHeight(x: number, z: number): number {
   }
 
   // 3. Dashain Tika House 1 Porch (Mula Ghar at [-28, -35])
-  if (x >= -31.5 && x <= -24.5 && z >= -32.5 && z <= -29.2) {
+  if (x >= -31.5 && x <= -24.5 && z >= -34.0 && z <= -30.5) {
     return hillHeight + 0.35; // Front porch
   }
 
   // 4. Dashain Tika House 2 Porch (Maiti Ghar at [28, -35])
-  if (x >= 24.5 && x <= 31.5 && z >= -32.5 && z <= -29.2) {
+  if (x >= 24.5 && x <= 31.5 && z >= -34.0 && z <= -30.5) {
     return hillHeight + 0.35; // Front porch
   }
 
   // 5. Aama Samuha Dance Platform Steps (Stage at [26, 22])
-  if (x >= 21.0 && x <= 31.0 && z >= 18.0 && z <= 25.8) {
+  if (x >= 21.0 && x <= 31.0 && z >= 19.0 && z <= 25.8) {
     return hillHeight + 0.8; // Raised wooden stage
   }
 

@@ -102,28 +102,6 @@ export const MelaGame: React.FC = () => {
   const [remotePlayers, setRemotePlayers] = useState<Map<string, RemotePlayerData>>(new Map());
   const [ping, setPing] = useState<number>(0);
 
-  // Live Working FPS Diagnostic Counter
-  const [fps, setFps] = useState<number>(60);
-  const frameCountRef = useRef<number>(0);
-  const lastFpsTimeRef = useRef<number>(performance.now());
-
-  useEffect(() => {
-    let animId: number;
-    const updateFps = () => {
-      frameCountRef.current++;
-      const now = performance.now();
-      const delta = now - lastFpsTimeRef.current;
-      if (delta >= 1000) {
-        setFps(Math.round((frameCountRef.current * 1000) / delta));
-        frameCountRef.current = 0;
-        lastFpsTimeRef.current = now;
-      }
-      animId = requestAnimationFrame(updateFps);
-    };
-    animId = requestAnimationFrame(updateFps);
-    return () => cancelAnimationFrame(animId);
-  }, []);
-
   // Attractions & Mini-Games State
   const [nearbyInteraction, setNearbyInteraction] = useState<string | null>(null);
   const [isSeatedOnSwing, setIsSeatedOnSwing] = useState<boolean>(false);
@@ -1134,9 +1112,9 @@ export const MelaGame: React.FC = () => {
       {/* ─── 3D WebGL Canvas ────────────────────────────────────────────────── */}
       <Canvas
         shadows={graphicsQuality === "high"}
-        camera={{ position: [0, 6, 52], fov: 60 }}
+        camera={{ position: [0, 6, 52], fov: 60, near: 0.1, far: 800 }}
         style={{ width: "100%", height: "100%" }}
-        gl={{ powerPreference: "high-performance", antialias: false, stencil: false }}
+        gl={{ powerPreference: "high-performance", antialias: false, stencil: false, precision: "mediump" }}
         dpr={[1, 1.25]}
       >
         {/* Continuous Smooth Synchronized Day-Night Cycle (Phase 9 - 5-minute cycle) */}
@@ -1420,7 +1398,6 @@ export const MelaGame: React.FC = () => {
           tokens={tokens}
           score={score}
           ping={ping}
-          fps={fps}
           isOnline={isOnline}
           connectionState={connectionState}
           playerCount={remotePlayers.size + 1}
