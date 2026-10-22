@@ -1094,7 +1094,7 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
         {/* Bottom Left: Dynamic Update Version Tag & Changelog Button */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ fontSize: "11px", color: "#94A3B8", fontWeight: 600 }}>
-            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.5 • Expanded World &amp; Dance Circles
+            <span style={{ color: "#38BDF8", fontWeight: 800 }}>Update:</span> v0.2.6 • Mandir Collision, Flagstone Paths &amp; Real Minigames
           </div>
           <button
             onClick={() => setShowChangelog(true)}
@@ -1196,11 +1196,29 @@ export const JoinLobbyModal: React.FC<JoinLobbyModalProps> = ({
               </button>
             </div>
 
-            {/* Version 0.2.5 */}
+            {/* Version 0.2.6 */}
             <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                 <span style={{ fontSize: "14px", fontWeight: 800, color: "#4ADE80" }}>
-                  v0.2.5 — Expanded World, 3 Dance Spots &amp; Cultural Beats (Current)
+                  v0.2.6 — Mandir Terrain Physics, Flagstone Paths &amp; Pure Real Multiplayer (Current)
+                </span>
+                <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
+              </div>
+              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#CBD5E1", lineHeight: "1.6" }}>
+                <li><strong>Rock-Solid Mandir Terrain &amp; Stairs:</strong> Fixed player controller physics so avatars ride on top of terrain and never sink inside the hill or stairs; smooth step-by-step staircase ascension to the level stone Mandir courtyard (+2.8m).</li>
+                <li><strong>Ground-Level Behind-House Dance Ring:</strong> Fixed the 3rd dance circle behind Mula Ghar so it sits firmly on the ground (y = 0.02) rather than floating in mid-air, with perimeter festive lamps and dedicated stone access path.</li>
+                <li><strong>Interconnected Flagstone &amp; Cobblestone Pathways:</strong> Detailed network of textured flagstone avenues with raised terracotta curbs connecting Entrance, Bazaar, Chautari, Mandir Promenade, Linge Ping, Taas Grove, Aama Samuha, Langur Burja, and both Tika houses.</li>
+                <li><strong>Accurate Aama Samuha Mat Seating:</strong> Synchronized seating slots to the exact coordinates of the 8 woven velvet mats; seated players face North directly toward the stage dancers.</li>
+                <li><strong>Pure Real Player Minigames (AI Bots Removed):</strong> Teen Patti and Bagh-Chal completely free of fake AI bots; cards deal to real seated players and Bagh-Chal features authentic 2-player pass &amp; play (Goats vs Tigers).</li>
+                <li><strong>Performance &amp; Resource Optimization:</strong> Cut 550+ redundant meshes, removed 24 dynamic point lights, and isolated HUD re-renders for rock-solid 60 FPS on both mobile and PC.</li>
+              </ul>
+            </div>
+
+            {/* Version 0.2.5 */}
+            <div style={{ marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 800, color: "#38BDF8" }}>
+                  v0.2.5 — Expanded World, 3 Dance Spots &amp; Cultural Beats
                 </span>
                 <span style={{ fontSize: "10px", color: "#94A3B8" }}>October 2026</span>
               </div>

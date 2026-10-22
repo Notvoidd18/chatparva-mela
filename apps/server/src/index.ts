@@ -46,7 +46,7 @@ app.get("/health", async (_req, res) => {
 
   res.json({
     status: "ok",
-    version: "0.2.5",
+    version: "0.2.6",
     timestamp: new Date().toISOString(),
     room_count: 2,
     rooms: [ROOM_NAMES.SERVER_1, ROOM_NAMES.SERVER_2],

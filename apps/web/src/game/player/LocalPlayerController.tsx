@@ -80,9 +80,9 @@ function getSurfaceHeight(x: number, z: number): number {
 
   // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -75])
   const distToMandir = Math.hypot(x, z - (-75));
-  // Central grand stone staircase (width 8.4m, from z = -53 to -69)
-  if (Math.abs(x) <= 4.2 && z <= -53 && z >= -69) {
-    const stepIdx = Math.floor((-53 - z) / 2.0);
+  // Central grand stone staircase (width 8.4m, from z = -52 to -68)
+  if (Math.abs(x) <= 4.2 && z <= -52 && z >= -68) {
+    const stepIdx = Math.floor((-52 - z) / 2.0);
     return Math.min(2.8, 0.35 + stepIdx * 0.35);
   }
   // Elevated Mandir Plateau Plinth (level surface around temple)
@@ -616,8 +616,17 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
         isGroundedRef.current = true;
       }
     } else {
-      // Smoothly stick to ground or ascended stairs
-      posRef.current.y = THREE.MathUtils.lerp(posRef.current.y, currentGroundHeight, 0.35);
+      // Strict terrain collision: avatar must NEVER sink beneath ground level, stairs or hill slope
+      if (posRef.current.y < currentGroundHeight) {
+        posRef.current.y = currentGroundHeight;
+      } else if (posRef.current.y > currentGroundHeight + 0.25) {
+        // Walked off an elevated terrace or ledge — begin natural fall
+        isGroundedRef.current = false;
+        velocityYRef.current = 0;
+      } else {
+        // Firmly track ground level and stairs
+        posRef.current.y = currentGroundHeight;
+      }
     }
 
     const isMoving = Math.abs(moveForward) > 0.05 || Math.abs(moveRight) > 0.05;

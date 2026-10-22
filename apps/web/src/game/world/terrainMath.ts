@@ -11,7 +11,14 @@ export function getTerrainHeight(x: number, z: number): number {
     return 0;
   }
 
-  // 2. Grand Elevated Durga Mandir Hill Mound (North Terrace at z = -75)
+  // 2a. Grand Ceremonial Stone Staircase Corridor (|x| <= 4.5, z between -51 and -69)
+  // Carve a smooth foundation under the stone steps so green terrain never clips through the stairs
+  if (Math.abs(x) <= 4.5 && z <= -51 && z >= -69) {
+    const tStairs = (-51 - z) / 18;
+    return Math.max(0, tStairs * 2.65);
+  }
+
+  // 2b. Grand Elevated Durga Mandir Hill Mound (North Terrace at z = -75)
   // Rises smoothly from z = -49 up to a flat ceremonial plateau (+2.8m)
   const distToMandir = Math.hypot(x, z - (-75));
   if (distToMandir < 26) {

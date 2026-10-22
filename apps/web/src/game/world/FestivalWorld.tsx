@@ -357,7 +357,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         { y: 2.45, z: -65.0, width: 7.0, depth: 2.0 },
         { y: 2.80, z: -67.0, width: 6.8, depth: 2.0 },
       ].map((step, idx) => (
-        <group key={`mandir-hill-step-${idx}`} position={[0, step.y, step.z]}>
+        <group key={`mandir-hill-step-${idx}`} position={[0, step.y - 0.175, step.z]}>
           <mesh receiveShadow castShadow>
             <boxGeometry args={[step.width, 0.35, step.depth]} />
             <meshStandardMaterial color="#B45309" roughness={0.75} />
@@ -421,6 +421,16 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
       {/* 4. Northwest Hill Path from Linge Ping to Scenic Hillside Dance Ring ([-26, -10] to [-26, -46]) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, -0.034, -28]} receiveShadow>
         <planeGeometry args={[4.6, 36]} />
+        <meshStandardMaterial color="#9C4124" roughness={0.8} />
+      </mesh>
+      {/* Northwest Dance Ring Courtyard Apron & Path Behind Mula Ghar */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, -0.032, -46]} receiveShadow>
+        <circleGeometry args={[5.2, 32]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+      {/* Path connecting Mula Ghar back courtyard [-28, -39] to Dance Ring [-26, -46] */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-27, -0.033, -42.5]} receiveShadow>
+        <planeGeometry args={[4.8, 7]} />
         <meshStandardMaterial color="#9C4124" roughness={0.8} />
       </mesh>
 
@@ -2036,7 +2046,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
       {[
         { id: "spot1_aama", name: "Aama Samuha Chautari Stage", x: 42, y: 0.02, z: 34 },
         { id: "spot2_bhailo", name: "Deusi Bhailo Village Plaza", x: -38, y: 0.02, z: 36 },
-        { id: "spot3_mandir", name: "Scenic Hillside Maruni Ring", x: -26, y: 0.85, z: -46 },
+        { id: "spot3_mandir", name: "Scenic Hillside Maruni Ring", x: -26, y: 0.02, z: -46 },
       ].map((spot) => {
         const isPlayerNear = isNear(spot.x, spot.z, 5.0);
         return (
