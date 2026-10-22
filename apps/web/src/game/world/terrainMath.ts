@@ -12,11 +12,13 @@ export function getTerrainHeight(x: number, z: number): number {
   }
 
   // 2. Grand Elevated Durga Mandir Hill Mound (North Terrace at z = -75)
-  // Rises smoothly from z = -50 up to +2.8m at the temple plateau
+  // Rises smoothly from z = -49 up to a flat ceremonial plateau (+2.8m)
   const distToMandir = Math.hypot(x, z - (-75));
-  if (distToMandir < 22) {
-    const t = Math.max(0, 1 - distToMandir / 22);
-    // Smooth cosine terraced elevation curve up to +2.8m
+  if (distToMandir < 26) {
+    if (distToMandir <= 18) {
+      return 2.8; // Level plateau under the temple sanctum and courtyard
+    }
+    const t = (26 - distToMandir) / 8;
     return (1 - Math.cos(t * Math.PI)) * 0.5 * 2.8;
   }
 

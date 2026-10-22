@@ -467,7 +467,7 @@ export const MelaGame: React.FC = () => {
   const CULTURAL_DANCE_SPOTS = [
     { id: "spot1_aama", name: "Aama Samuha Chautari", x: 42, z: 34 },
     { id: "spot2_bhailo", name: "Deusi Bhailo Courtyard", x: -38, z: 36 },
-    { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, z: -72 },
+    { id: "spot3_mandir", name: "Scenic Hillside Maruni Ring", x: -26, z: -46 },
   ];
 
   // Real connected players list for live minigame tables

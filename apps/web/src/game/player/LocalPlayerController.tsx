@@ -50,7 +50,7 @@ const OBSTACLES = [
   { x: -28, z: -35, radius: 4.6 }, // Tika House 1 (Bada Dashain Mula Ghar)
   { x: 28, z: -35, radius: 4.6 }, // Tika House 2 (Maiti Ghar)
   { x: 26, z: 22, radius: 4.2 }, // Aama Samuha Stage
-  { x: 0, z: -76.5, radius: 3.5 }, // Temple Inner Sanctum (Front stairs at z=-53 to -69 are completely walkable!)
+  { x: 0, z: -78.5, radius: 2.2 }, // Temple Sanctum Back Altar (Front stairs, portico, and prayer area at z=-53 to -74 are open!)
   // Individual Pine Trees around Taas Grove
   { x: -32, z: 16, radius: 0.6 },
   { x: -24, z: 16, radius: 0.6 },
@@ -79,13 +79,14 @@ function getSurfaceHeight(x: number, z: number): number {
   const hillHeight = getTerrainHeight(x, z);
 
   // 1. Shree Durga Mata Mandir Steps & Terracotta Plinth (Temple Hill at [0, -75])
-  // Steps lead up smoothly from z = -53 to -69
-  if (Math.abs(x) < 3.8 && z <= -53 && z >= -69) {
+  const distToMandir = Math.hypot(x, z - (-75));
+  // Central grand stone staircase (width 8.4m, from z = -53 to -69)
+  if (Math.abs(x) <= 4.2 && z <= -53 && z >= -69) {
     const stepIdx = Math.floor((-53 - z) / 2.0);
-    return Math.min(2.8, 0.25 + stepIdx * 0.35);
+    return Math.min(2.8, 0.35 + stepIdx * 0.35);
   }
-  // Elevated Mandir Plateau Plinth
-  if (Math.abs(x) < 14 && z <= -69 && z >= -83) {
+  // Elevated Mandir Plateau Plinth (level surface around temple)
+  if (distToMandir <= 18) {
     return 2.8;
   }
 
@@ -411,26 +412,27 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
     if (wasSeatedAtAamaRef.current && !isSeatedAtAama) {
       wasSeatedAtAamaRef.current = false;
       const slot = aamaSitSlotRef.current;
-      posRef.current.set(slot.x, 0, slot.z + 2.0); // Stand safely in front of the ground seating mat
+      posRef.current.set(slot.x, 0, slot.z + 1.2); // Stand safely beside the seating mat
       velocityYRef.current = 0;
       isGroundedRef.current = true;
       rotYRef.current = 0;
       setAnimState("idle");
     }
 
-    // If seated at Aama Samuha Gathering Stage on the ground in front of dancers
+    // If seated at Aama Samuha Gathering Stage on the physical mats in front of stage
     if (isSeatedAtAama) {
       if (!wasSeatedAtAamaRef.current) {
         wasSeatedAtAamaRef.current = true;
+        // Exact world coordinates of the 8 woven velvet mats in front of stage [26, 0, 22]
         const AAMA_SEAT_SLOTS = [
-          { x: 38.0, z: 29.5 },
-          { x: 40.5, z: 29.5 },
-          { x: 43.5, z: 29.5 },
-          { x: 46.0, z: 29.5 },
-          { x: 38.0, z: 31.8 },
-          { x: 40.5, z: 31.8 },
-          { x: 43.5, z: 31.8 },
-          { x: 46.0, z: 31.8 },
+          { x: 21.5, z: 27.4 },
+          { x: 23.8, z: 27.4 },
+          { x: 26.0, z: 27.4 },
+          { x: 28.2, z: 27.4 },
+          { x: 30.5, z: 27.4 },
+          { x: 22.8, z: 29.6 },
+          { x: 26.0, z: 29.6 },
+          { x: 29.2, z: 29.6 },
         ];
         let closest = AAMA_SEAT_SLOTS[0];
         let minD = Infinity;
@@ -446,7 +448,7 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
 
       const slot = aamaSitSlotRef.current;
       posRef.current.set(slot.x, 0.05, slot.z);
-      rotYRef.current = Math.PI; // Face north toward the cultural dancers
+      rotYRef.current = 0; // Face North directly toward the cultural stage dancers!
 
       const isClapPressed = keysRef.current["Space"] || virtualJump;
       const sitAnim = isClapPressed ? "seated_clapping" : "seated";
@@ -457,9 +459,9 @@ export const LocalPlayerController: React.FC<LocalPlayerControllerProps> = ({
         playerRef.current.rotation.set(0, rotYRef.current, 0);
       }
 
-      // Camera positioned behind player looking over their shoulders at dancing elders
+      // Camera positioned behind seated player looking over shoulders at the performers on stage
       camera.position.lerp(new THREE.Vector3(slot.x, 1.8, slot.z + 3.2), 0.12);
-      camera.lookAt(slot.x, 1.3, 24.0);
+      camera.lookAt(slot.x, 1.3, 22.8);
 
       onPositionChange?.({
         x: posRef.current.x,

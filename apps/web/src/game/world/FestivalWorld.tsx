@@ -335,68 +335,123 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
         <meshStandardMaterial vertexColors roughness={0.92} />
       </mesh>
 
-      {/* ─── Elevated Mandir Hill Mounds & Terraces (पहाडी ढिस्को र खुड्किलाहरू at z = -75) ─── */}
-      {/* Lower Terraced Hill Plinth under Temple (Plateau at z = -75, completely away from Rangoli at z = -28) */}
-      <mesh position={[0, 0.9, -75]} receiveShadow>
-        <cylinderGeometry args={[18, 24, 1.8, 32]} />
-        <meshStandardMaterial color="#4A6B36" roughness={0.9} />
+      {/* ─── Elevated Mandir Hill Sacred Stone Courtyard (मन्दिर प्राङ्गण at y = 2.81m, z = -75) ─── */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 2.81, -75]} receiveShadow>
+        <circleGeometry args={[17.5, 36]} />
+        <meshStandardMaterial color="#78716C" roughness={0.82} />
       </mesh>
-      {/* Upper Stone Hill Tier */}
-      <mesh position={[0, 2.0, -75]} receiveShadow>
-        <cylinderGeometry args={[14, 18, 1.2, 32]} />
-        <meshStandardMaterial color="#78350F" roughness={0.85} />
+      {/* Ornate Terracotta Border Curb around the Temple Courtyard */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 2.815, -75]}>
+        <ringGeometry args={[16.8, 17.5, 36]} />
+        <meshStandardMaterial color="#991B1B" roughness={0.7} />
       </mesh>
-      {/* Grand Ceremonial Stone Steps leading up to the Mandir Hill from z = -54 to -68 */}
+
+      {/* Grand Ceremonial Stone Steps leading up to the Mandir Hill from z = -53 to -69 */}
       {[
-        { y: 0.25, z: -54.0, width: 7.2, depth: 2.0 },
-        { y: 0.60, z: -56.0, width: 6.9, depth: 2.0 },
-        { y: 0.95, z: -58.0, width: 6.6, depth: 2.0 },
-        { y: 1.30, z: -60.0, width: 6.3, depth: 2.0 },
-        { y: 1.65, z: -62.0, width: 6.0, depth: 2.0 },
-        { y: 2.00, z: -64.0, width: 5.7, depth: 2.0 },
-        { y: 2.35, z: -66.0, width: 5.4, depth: 2.0 },
-        { y: 2.70, z: -68.0, width: 5.1, depth: 2.0 },
+        { y: 0.35, z: -53.0, width: 8.2, depth: 2.0 },
+        { y: 0.70, z: -55.0, width: 8.0, depth: 2.0 },
+        { y: 1.05, z: -57.0, width: 7.8, depth: 2.0 },
+        { y: 1.40, z: -59.0, width: 7.6, depth: 2.0 },
+        { y: 1.75, z: -61.0, width: 7.4, depth: 2.0 },
+        { y: 2.10, z: -63.0, width: 7.2, depth: 2.0 },
+        { y: 2.45, z: -65.0, width: 7.0, depth: 2.0 },
+        { y: 2.80, z: -67.0, width: 6.8, depth: 2.0 },
       ].map((step, idx) => (
-        <mesh key={`mandir-hill-step-${idx}`} position={[0, step.y, step.z]} receiveShadow castShadow>
-          <boxGeometry args={[step.width, 0.35, step.depth]} />
-          <meshStandardMaterial color="#B45309" roughness={0.75} />
-        </mesh>
+        <group key={`mandir-hill-step-${idx}`} position={[0, step.y, step.z]}>
+          <mesh receiveShadow castShadow>
+            <boxGeometry args={[step.width, 0.35, step.depth]} />
+            <meshStandardMaterial color="#B45309" roughness={0.75} />
+          </mesh>
+          {/* Stone step edging curb */}
+          <mesh position={[0, 0.18, step.depth / 2 - 0.05]}>
+            <boxGeometry args={[step.width, 0.05, 0.1]} />
+            <meshStandardMaterial color="#78350F" roughness={0.8} />
+          </mesh>
+        </group>
       ))}
 
-      {/* Central Courtyard & Paths (Terracotta Cobblestone Paving) */}
+      {/* ─── Detailed Interconnected Festival Pathways (बाटो तथा चौतारीहरू) ───────── */}
+      {/* Central Chautari Plaza Flagstone Roundabout */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 5]} receiveShadow>
-        <circleGeometry args={[28, 36]} />
+        <circleGeometry args={[18, 36]} />
         <meshStandardMaterial color="#A0522D" roughness={0.8} />
       </mesh>
-      {/* Entrance Walkway */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 34]} receiveShadow>
-        <planeGeometry args={[9, 36]} />
+      {/* Decorative Red Brick Outer Border for Plaza */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.038, 5]}>
+        <ringGeometry args={[17.2, 18.0, 36]} />
+        <meshStandardMaterial color="#7C2D12" roughness={0.75} />
+      </mesh>
+
+      {/* 1. Entrance Walkway Avenue (South Gate to Chautari) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.035, 34]} receiveShadow>
+        <planeGeometry args={[8, 32]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
-      {/* Path to Ping Swing */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.4]} position={[-14, -0.03, -2]} receiveShadow>
-        <planeGeometry args={[5, 28]} />
+      {/* Entrance Avenue Brick Edging */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-4.1, -0.03, 34]}>
+        <planeGeometry args={[0.3, 32]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[4.1, -0.03, 34]}>
+        <planeGeometry args={[0.3, 32]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+
+      {/* 2. North Grand Mandir Promenade (Chautari to Temple Stairs from z = 5 to -53) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.035, -24]} receiveShadow>
+        <planeGeometry args={[7.2, 58]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
-      {/* Path to Langur Burja */}
-      <mesh rotation={[-Math.PI / 2, 0, -0.4]} position={[14, -0.03, -2]} receiveShadow>
-        <planeGeometry args={[5, 28]} />
+      {/* Promenade Stone Border Curbs */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-3.7, -0.03, -24]}>
+        <planeGeometry args={[0.3, 58]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[3.7, -0.03, -24]}>
+        <planeGeometry args={[0.3, 58]} />
+        <meshStandardMaterial color="#78350F" roughness={0.8} />
+      </mesh>
+
+      {/* 3. West Path to Traditional Bamboo Linge Ping (Chautari [0,5] to Ping [-26, -10]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0.52]} position={[-13, -0.034, -2.5]} receiveShadow>
+        <planeGeometry args={[5.2, 30]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
       </mesh>
-      {/* Path to Forest Taas Circle */}
-      <mesh rotation={[-Math.PI / 2, 0, -0.6]} position={[-16, -0.03, 14]} receiveShadow>
-        <planeGeometry args={[4, 22]} />
+
+      {/* 4. Northwest Hill Path from Linge Ping to Scenic Hillside Dance Ring ([-26, -10] to [-26, -46]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-26, -0.034, -28]} receiveShadow>
+        <planeGeometry args={[4.6, 36]} />
         <meshStandardMaterial color="#9C4124" roughness={0.8} />
       </mesh>
-      {/* Path to Aama Samuha Gathering */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.6]} position={[16, -0.03, 15]} receiveShadow>
-        <planeGeometry args={[4, 22]} />
+
+      {/* 5. Southwest Path to Forest Taas Circle (Chautari to [-28, 20]) */}
+      <mesh rotation={[-Math.PI / 2, 0, -0.52]} position={[-14, -0.034, 12.5]} receiveShadow>
+        <planeGeometry args={[4.8, 28]} />
         <meshStandardMaterial color="#9C4124" roughness={0.8} />
       </mesh>
-      {/* North Path to Pagoda Temple */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, -30]} receiveShadow>
-        <planeGeometry args={[6, 30]} />
+
+      {/* 6. Southeast Path to Aama Samuha Gathering Stage (Chautari to [26, 22]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0.52]} position={[13, -0.034, 13.5]} receiveShadow>
+        <planeGeometry args={[5.2, 28]} />
         <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+
+      {/* 7. Northeast Path to Langur Burja Game Pavilion (Chautari to [24, -12]) */}
+      <mesh rotation={[-Math.PI / 2, 0, -0.58]} position={[12, -0.034, -3.5]} receiveShadow>
+        <planeGeometry args={[5.2, 28]} />
+        <meshStandardMaterial color="#B25938" roughness={0.75} />
+      </mesh>
+
+      {/* 8. Cross Branch to Bada Dashain Mula Ghar (House 1 at [-28, -35]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-15, -0.034, -35]} receiveShadow>
+        <planeGeometry args={[22, 4.4]} />
+        <meshStandardMaterial color="#A0522D" roughness={0.8} />
+      </mesh>
+
+      {/* 9. Cross Branch to Dashain Maiti Ghar (House 2 at [28, -35]) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.034, -35]} receiveShadow>
+        <planeGeometry args={[22, 4.4]} />
+        <meshStandardMaterial color="#A0522D" roughness={0.8} />
       </mesh>
 
       {/* ─── Distant Nepal Scenery (Himalayan Giants & Rolling Hills on Far Horizon) ─ */}
@@ -1981,7 +2036,7 @@ export const FestivalWorld: React.FC<FestivalWorldProps> = ({
       {[
         { id: "spot1_aama", name: "Aama Samuha Chautari Stage", x: 42, y: 0.02, z: 34 },
         { id: "spot2_bhailo", name: "Deusi Bhailo Village Plaza", x: -38, y: 0.02, z: 36 },
-        { id: "spot3_mandir", name: "Hillside Mandir Maruni Ring", x: 0, y: 2.82, z: -72 },
+        { id: "spot3_mandir", name: "Scenic Hillside Maruni Ring", x: -26, y: 0.85, z: -46 },
       ].map((spot) => {
         const isPlayerNear = isNear(spot.x, spot.z, 5.0);
         return (
